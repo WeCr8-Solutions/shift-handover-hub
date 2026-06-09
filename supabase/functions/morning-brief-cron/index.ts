@@ -110,20 +110,31 @@ async function buildBriefForOrg(orgId: string, orgName: string): Promise<BriefRo
   };
 }
 
+// HTML-escape helper — prevents stored-XSS / HTML injection from any database
+// values (org names, station names) that an org admin could control.
+function esc(s: unknown): string {
+  return String(s ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;");
+}
+
 function renderHtml(b: BriefRow) {
   const rows = b.bottlenecks.length
     ? b.bottlenecks
         .map(
           (x) =>
-            `<tr><td style="padding:4px 8px">${x.station}</td><td style="padding:4px 8px;text-align:right">${x.pending} pending</td></tr>`,
+            `<tr><td style="padding:4px 8px">${esc(x.station)}</td><td style="padding:4px 8px;text-align:right">${x.pending} pending</td></tr>`,
         )
         .join("")
     : `<tr><td colspan="2" style="padding:4px 8px;color:#666">No bottlenecks detected.</td></tr>`;
 
   return `<!doctype html><html><body style="font-family:system-ui,-apple-system,sans-serif;background:#f6f7f9;padding:24px;color:#111">
     <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:12px;padding:24px;border:1px solid #e5e7eb">
-      <h1 style="margin:0 0 4px;font-size:18px">${b.org_name} — Morning brief</h1>
-      <p style="margin:0 0 16px;color:#666;font-size:13px">${new Date().toDateString()}</p>
+      <h1 style="margin:0 0 4px;font-size:18px">${esc(b.org_name)} — Morning brief</h1>
+      <p style="margin:0 0 16px;color:#666;font-size:13px">${esc(new Date().toDateString())}</p>
       <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:16px">
         <tr><td style="padding:6px 8px;background:#f3f4f6">Open work orders</td><td style="padding:6px 8px;background:#f3f4f6;text-align:right"><strong>${b.open_wos}</strong></td></tr>
         <tr><td style="padding:6px 8px">Overdue</td><td style="padding:6px 8px;text-align:right;color:#b91c1c"><strong>${b.overdue}</strong></td></tr>

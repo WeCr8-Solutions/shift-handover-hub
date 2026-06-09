@@ -74,7 +74,16 @@ serve(async (req) => {
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not configured");
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
-    const origin = req.headers.get("origin") || "https://jobline.ai";
+    // Allowlist origin to prevent attacker-controlled success/cancel redirects.
+    const ALLOWED_ORIGINS = new Set([
+      "https://jobline.ai",
+      "https://www.jobline.ai",
+      "https://app.jobline.ai",
+      "https://dev.jobline.ai",
+      "https://joblineai.lovable.app",
+    ]);
+    const rawOrigin = req.headers.get("origin") ?? "";
+    const origin = ALLOWED_ORIGINS.has(rawOrigin) ? rawOrigin : "https://jobline.ai";
 
     const programName =
       body.programName?.trim() ||

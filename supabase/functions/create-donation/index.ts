@@ -29,7 +29,16 @@ serve(async (req) => {
     const { price_id, amount_cents } = await req.json();
     logStep("Request body parsed", { price_id, amount_cents });
 
-    const origin = req.headers.get("origin") || "https://jobline.ai";
+    // Allowlist origin to prevent attacker-controlled success/cancel redirects.
+    const ALLOWED_ORIGINS = new Set([
+      "https://jobline.ai",
+      "https://www.jobline.ai",
+      "https://app.jobline.ai",
+      "https://dev.jobline.ai",
+      "https://joblineai.lovable.app",
+    ]);
+    const rawOrigin = req.headers.get("origin") ?? "";
+    const origin = ALLOWED_ORIGINS.has(rawOrigin) ? rawOrigin : "https://jobline.ai";
     
     let lineItems: Stripe.Checkout.SessionCreateParams.LineItem[];
 
