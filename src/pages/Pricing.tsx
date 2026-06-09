@@ -4,30 +4,17 @@ import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
-import { useSubscription, PRICING_TIERS, SubscriptionTier } from '@/hooks/useSubscription';
-import { 
-  Check, 
-  Zap, 
-  Users, 
-  Building2, 
-  Loader2,
-  Crown,
-  Settings,
-} from 'lucide-react';
+import { useSubscription } from '@/hooks/useSubscription';
+import { TIERS, ADDONS, TIER_META } from '@/lib/subscriptionTiers';
+import { TierCard } from '@/components/marketing/TierCard';
+import { Zap, Loader2 } from 'lucide-react';
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { FreeTalentProfileBanner } from "@/components/marketing/FreeTalentProfileBanner";
 import { ConciergeCTA } from "@/components/marketing/ConciergeCTA";
-import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { ConversionEvents } from '@/lib/analytics';
-
-const tierIcons: Record<string, React.ReactNode> = {
-  single: <Zap className="w-6 h-6" />,
-  team: <Users className="w-6 h-6" />,
-  enterprise: <Building2 className="w-6 h-6" />,
-};
 
 export default function Pricing() {
   const navigate = useNavigate();
