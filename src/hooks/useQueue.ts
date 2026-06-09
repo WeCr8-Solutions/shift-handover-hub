@@ -142,9 +142,11 @@ export interface CreateQueueItemInput {
   part_catalog_id?: string;
   required_tolerance?: string;
   surface_finish?: string;
+  customer_id?: string | null;
   // Routing
   routing_steps?: RoutingStepInput[];
 }
+
 
 export interface UpdateQueueItemInput {
   title?: string;
