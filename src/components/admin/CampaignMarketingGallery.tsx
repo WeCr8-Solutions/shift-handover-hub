@@ -210,6 +210,8 @@ export function CampaignMarketingGallery({ campaignId }: Props) {
         flyer_image: "flyers",
         mailing_list_xlsx: "mailing-lists",
         document: "documents",
+        business_card: "business-cards",
+        talent_material: "talent-materials",
         other: "other",
       };
       const manifest: string[] = [
