@@ -877,6 +877,10 @@ ON CONFLICT (user_id, role) DO NOTHING;`}
           <ContactsExportTab campaignId={campaignId} />
         </TabsContent>
 
+        <TabsContent value="gallery">
+          <CampaignMarketingGallery campaignId={campaignId} />
+        </TabsContent>
+
         <TabsContent value="print">
           <PrintMaterials />
         </TabsContent>
