@@ -10363,6 +10363,8 @@ export type Database = {
           activation_state: Database["public"]["Enums"]["org_activation_state"]
           ai_enabled: boolean
           billing_email: string | null
+          claimed_at: string | null
+          claimed_by_user_id: string | null
           created_at: string
           created_by: string
           description: string | null
@@ -10414,6 +10416,8 @@ export type Database = {
           activation_state?: Database["public"]["Enums"]["org_activation_state"]
           ai_enabled?: boolean
           billing_email?: string | null
+          claimed_at?: string | null
+          claimed_by_user_id?: string | null
           created_at?: string
           created_by: string
           description?: string | null
@@ -10465,6 +10469,8 @@ export type Database = {
           activation_state?: Database["public"]["Enums"]["org_activation_state"]
           ai_enabled?: boolean
           billing_email?: string | null
+          claimed_at?: string | null
+          claimed_by_user_id?: string | null
           created_at?: string
           created_by?: string
           description?: string | null
@@ -16105,6 +16111,10 @@ export type Database = {
         Returns: number
       }
       fetch_display_data: { Args: { _token: string }; Returns: Json }
+      generate_owner_claim_artifacts: {
+        Args: { p_engagement_id: string; p_owner_email?: string }
+        Returns: Json
+      }
       get_auth_user_id_by_email: { Args: { _email: string }; Returns: string }
       get_erp_persistence_mode: { Args: { _org_id: string }; Returns: string }
       get_org_billing: {
@@ -16551,6 +16561,10 @@ export type Database = {
         Args: { p_organization_id: string }
         Returns: Json
       }
+      materialize_intake_invites: {
+        Args: { p_engagement_id: string }
+        Returns: Json
+      }
       mfg_100_apply_ranking: {
         Args: { _edition: string; _ranking: Json }
         Returns: number
@@ -16680,6 +16694,10 @@ export type Database = {
       seed_org_production_defaults: {
         Args: { p_org_id: string }
         Returns: undefined
+      }
+      stamp_owner_claimed: {
+        Args: { p_organization_id: string }
+        Returns: Json
       }
       submit_intake_step: {
         Args: { p_engagement_id: string; p_module_key: string; p_payload: Json }
