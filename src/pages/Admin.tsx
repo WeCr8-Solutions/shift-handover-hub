@@ -15,6 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { AdminComponentAccess } from "@/types/admin";
 import { OrgScopeSelect } from "@/components/admin/OrgScopeSelect";
 import { toast } from "sonner";
+import { useUrlState } from "@/hooks/useUrlState";
 
 // Lazy-load heavy admin panels (Phase 6 — code splitting)
 const UserManagement = lazy(() => import("@/components/admin/UserManagement").then(m => ({ default: m.UserManagement })));
