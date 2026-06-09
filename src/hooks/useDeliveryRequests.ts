@@ -15,7 +15,13 @@ import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/contexts/OrgContext";
 
-export type DeliveryStatus = "pending" | "in_transit" | "delivered" | "cancelled";
+export type DeliveryStatus =
+  | "pending"
+  | "in_transit"
+  | "awaiting_acceptance"
+  | "accepted"
+  | "delivered" // legacy rows that pre-date acceptance
+  | "cancelled";
 
 export interface DeliveryRequest {
   id: string;
@@ -36,6 +42,10 @@ export interface DeliveryRequest {
   delivered_by: string | null;
   delivered_by_name: string | null;
   delivered_at: string | null;
+  accepted_by: string | null;
+  accepted_by_name: string | null;
+  accepted_at: string | null;
+  accepted_via: string | null;
   estimated_delivery_time: string | null;
   created_at: string;
   updated_at: string;
@@ -53,10 +63,17 @@ interface UseDeliveryRequestsResult {
   refetch: () => Promise<void>;
   markPickedUp: (id: string) => Promise<{ error: string | null }>;
   markDelivered: (id: string) => Promise<{ error: string | null }>;
+  acceptDelivery: (id: string) => Promise<{ error: string | null }>;
+  forceAccept: (id: string) => Promise<{ error: string | null }>;
   cancel: (id: string) => Promise<{ error: string | null }>;
 }
 
-const ACTIVE_STATUSES: DeliveryStatus[] = ["pending", "in_transit"];
+const ACTIVE_STATUSES: DeliveryStatus[] = [
+  "pending",
+  "in_transit",
+  "awaiting_acceptance",
+  "delivered",
+];
 
 export function useDeliveryRequests(): UseDeliveryRequestsResult {
   const { organization } = useOrgContext();
