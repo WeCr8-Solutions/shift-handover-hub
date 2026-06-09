@@ -28,6 +28,8 @@ export interface ConciergePrefillData {
     cancelAtPeriodEnd: boolean;
     seatAssignments: string[][]; // seat_number, email, name, role, assigned (Y/N), notes
   };
+  /** Current logged-in JobLine staff member generating the pack (autofills rep fields). */
+  currentStaff: { userId: string; email: string | null; displayName: string | null } | null;
 }
 
 const EMPTY: ConciergePrefillData = {
