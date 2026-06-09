@@ -1026,6 +1026,68 @@ export type Database = {
         }
         Relationships: []
       }
+      campaign_marketing_assets: {
+        Row: {
+          byte_size: number | null
+          campaign_id: string
+          created_at: string
+          id: string
+          kind: string
+          mime_type: string | null
+          notes: string | null
+          storage_path: string
+          title: string
+          updated_at: string
+          uploaded_by: string | null
+          used_on: string | null
+          utm_content: string | null
+          utm_target_url: string | null
+          zone_number: number | null
+        }
+        Insert: {
+          byte_size?: number | null
+          campaign_id: string
+          created_at?: string
+          id?: string
+          kind: string
+          mime_type?: string | null
+          notes?: string | null
+          storage_path: string
+          title: string
+          updated_at?: string
+          uploaded_by?: string | null
+          used_on?: string | null
+          utm_content?: string | null
+          utm_target_url?: string | null
+          zone_number?: number | null
+        }
+        Update: {
+          byte_size?: number | null
+          campaign_id?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          mime_type?: string | null
+          notes?: string | null
+          storage_path?: string
+          title?: string
+          updated_at?: string
+          uploaded_by?: string | null
+          used_on?: string | null
+          utm_content?: string | null
+          utm_target_url?: string | null
+          zone_number?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_marketing_assets_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "flyer_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       certificate_templates: {
         Row: {
           accent_color_hex: string | null

@@ -11,7 +11,8 @@ import {
 } from "@/components/ui/select";
 import { Download, Mail, Phone, MapPin, CheckCircle2, FileSpreadsheet } from "lucide-react";
 import { toast } from "sonner";
-import { downloadVistaPrintXlsx, parseUsAddressLine } from "@/lib/vistaPrintExport";
+import { downloadVistaPrintXlsx, parseUsAddressLine, buildVistaPrintXlsx } from "@/lib/vistaPrintExport";
+import { useCampaignMarketingAssets } from "@/hooks/useCampaignMarketingAssets";
 
 interface ContactRecord {
   id: string;
@@ -39,6 +40,7 @@ export function ContactsExportTab({ campaignId }: Props) {
   const [contacts, setContacts] = useState<ContactRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [exportType, setExportType] = useState<ExportType>("all");
+  const { uploadAsset } = useCampaignMarketingAssets(campaignId);
 
   const load = useCallback(async () => {
     if (!campaignId) return;
@@ -127,7 +129,28 @@ export function ContactsExportTab({ campaignId }: Props) {
         zip: parsed.zip,
       };
     });
+    const date = new Date().toISOString().slice(0, 10);
+    // Download for immediate use
     const count = await downloadVistaPrintXlsx(rows, "vista_postcard_list");
+    // Also archive to the campaign marketing gallery so the same list is preserved with date metadata
+    if (campaignId) {
+      try {
+        const blob = await buildVistaPrintXlsx(rows);
+        const filename = `vista_postcard_list_${date}.xlsx`;
+        await uploadAsset({
+          file: new File([blob], filename, {
+            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          }),
+          filename,
+          kind: "mailing_list_xlsx",
+          title: `Vista Print list — ${date} (${count} recipients)`,
+          notes: `Auto-archived from Contacts export. Filter: ${exportType}.`,
+          usedOn: date,
+        });
+      } catch (e) {
+        console.warn("Gallery archive failed", e);
+      }
+    }
     toast.success(`Vista Print list exported — ${count} recipients.`);
   }
 
