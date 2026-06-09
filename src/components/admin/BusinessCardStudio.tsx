@@ -474,7 +474,7 @@ function FrontFace({
           {phone && <div>{phone}</div>}
         </div>
       </div>
-      <div style={{ width: 200, padding: 28, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10 }}>
+      <div style={{ width: 200 + BLEED_PX, paddingRight: BLEED_PX + 28, paddingTop: SAFETY_PX, paddingBottom: SAFETY_PX, paddingLeft: 28, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10 }}>
         <div style={{ background: "#fff", padding: 6, border: `2px solid ${accent}`, borderRadius: 8 }}>
           <QRCodeSVG value={qrUrl} size={140} level="M" fgColor="#0F172A" bgColor="#ffffff" />
         </div>
