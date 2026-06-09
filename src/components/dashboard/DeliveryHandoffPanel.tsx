@@ -116,11 +116,20 @@ export function DeliveryHandoffPanel({ toStationId, compact = false }: DeliveryH
             busy={busyId === d.id}
             onPickup={() => handlePickup(d.id)}
             onDelivered={() => handleDelivered(d.id)}
+            onAccept={() => handleAccept(d.id)}
           />
         ))}
       </CardContent>
     </Card>
   );
+}
+
+interface DeliveryRowProps {
+  delivery: DeliveryRequest;
+  busy: boolean;
+  onPickup: () => void;
+  onDelivered: () => void;
+  onAccept: () => void;
 }
 
 interface DeliveryRowProps {
