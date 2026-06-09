@@ -40,7 +40,7 @@ describe("useOrganizationMembers ownership", () => {
 
   it("transferOwnership calls transfer_org_ownership RPC", async () => {
     rpc.mockResolvedValueOnce({ error: null });
-    const { result } = renderHook(() => useOrganizationMembers("org-1"));
+    const { result } = renderHook(() => useOrganizationMembers(null));
     await waitFor(() => expect(result.current.loading).toBe(false));
     await act(async () => {
       await result.current.transferOwnership("org-1", "u2");
@@ -53,7 +53,7 @@ describe("useOrganizationMembers ownership", () => {
 
   it("claimOwnership calls claim_org_ownership RPC", async () => {
     rpc.mockResolvedValueOnce({ error: null });
-    const { result } = renderHook(() => useOrganizationMembers("org-1"));
+    const { result } = renderHook(() => useOrganizationMembers(null));
     await waitFor(() => expect(result.current.loading).toBe(false));
     await act(async () => {
       await result.current.claimOwnership("org-1");
@@ -64,7 +64,7 @@ describe("useOrganizationMembers ownership", () => {
   });
 
   it("updateMemberOrgRole('admin') uses the table update path", async () => {
-    const { result } = renderHook(() => useOrganizationMembers("org-1"));
+    const { result } = renderHook(() => useOrganizationMembers(null));
     await waitFor(() => expect(result.current.loading).toBe(false));
     nextResult = { error: null };
     await act(async () => {
