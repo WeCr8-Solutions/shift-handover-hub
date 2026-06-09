@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useUrlState } from "@/hooks/useUrlState";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
@@ -127,8 +128,7 @@ export function DevIssueQueue() {
   const [loading, setLoading] = useState(true);
   const [selectedItem, setSelectedItem] = useState<DevQueueItem | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
-  const [updating, setUpdating] = useState<string | null>(null);
-  const [filter, setFilter] = useState<string>("active");
+  const [updating, setUpdating] = useState<string | null>(null);  const [filter, setFilter] = useUrlState<string>("f", "active");
   const [notes, setNotes] = useState("");
 
   // Lazy-fetch full diagnostic data only when detail dialog is open

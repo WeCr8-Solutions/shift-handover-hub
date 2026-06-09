@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useUrlState } from "@/hooks/useUrlState";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Header } from "@/components/Header";
@@ -1526,7 +1527,7 @@ function CertificationsManager({
   const { toast } = useToast();
   const [adding, setAdding] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
-  const [filter, setFilter] = useState<"all" | CertCategory>("all");
+  const [filter, setFilter] = useUrlState<"all" | CertCategory>("cert", "all");
   const [draft, setDraft] = useState({ name: "", issuer: "", issued_date: "", expires_date: "", credential_id: "", credential_url: "" });
 
   const add = async () => {

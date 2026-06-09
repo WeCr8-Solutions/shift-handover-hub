@@ -9,13 +9,14 @@ import { SystemStatusIndicator } from "@/components/updates/SystemStatusIndicato
 import { Megaphone } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SEOHead } from "@/components/SEOHead";
+import { useUrlState } from "@/hooks/useUrlState";
 
 export default function Updates() {
   const navigate = useNavigate();
   const { user, loading: authLoading, isReady } = useAuth();
   const { updates, loading, acknowledgedIds, acknowledgeUpdate, systemStatus } = useGlobalUpdates();
   const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("all");
+  const [category, setCategory] = useUrlState<string>("cat", "all");
 
   useEffect(() => {
     if (isReady && !user) navigate("/auth");

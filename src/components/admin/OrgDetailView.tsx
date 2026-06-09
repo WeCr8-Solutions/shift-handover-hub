@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useUrlState } from "@/hooks/useUrlState";
 import { OrganizationWithStats } from "@/hooks/useAdminData";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -48,8 +49,7 @@ export function OrgDetailView({ org, onBack, isPlatformAdmin, onDelete, onGrant,
   const [members, setMembers] = useState<OrgMember[]>([]);
   const [teams, setTeams] = useState<OrgTeam[]>([]);
   const [stations, setStations] = useState<OrgStation[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("overview");
+  const [loading, setLoading] = useState(true);  const [activeTab, setActiveTab] = useUrlState<string>("orgSub", "overview");
   const [openingAs, setOpeningAs] = useState(false);
   const { startActAs } = useActAs();
 

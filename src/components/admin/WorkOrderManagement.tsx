@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { useUrlState } from "@/hooks/useUrlState";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -52,12 +53,10 @@ export function WorkOrderManagement({ isAdmin }: WorkOrderManagementProps) {
   const { organizations } = useAllOrganizations();
   const [workOrders, setWorkOrders] = useState<QueueItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");  const [statusFilter, setStatusFilter] = useUrlState<string>("woStatus", "all");
   const [routingEditorItem, setRoutingEditorItem] = useState<QueueItem | null>(null);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<ViewMode>("grouped");
-  const [selectedOrg, setSelectedOrg] = useState<string>("all");
+  const [viewMode, setViewMode] = useState<ViewMode>("grouped");  const [selectedOrg, setSelectedOrg] = useUrlState<string>("woOrg", "all");
 
   useEffect(() => {
     fetchWorkOrders();

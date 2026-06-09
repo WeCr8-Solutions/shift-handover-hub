@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useUrlState } from "@/hooks/useUrlState";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrgContext } from "@/contexts/OrgContext";
@@ -114,7 +115,7 @@ export function PerformanceUpdatesReview({ isAdmin }: PerformanceUpdatesReviewPr
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Filters
-  const [statusFilter, setStatusFilter] = useState("pending");
+  const [statusFilter, setStatusFilter] = useUrlState<string>("s", "pending");
   const [searchQuery, setSearchQuery] = useState("");
 
   const fetchData = useCallback(async () => {

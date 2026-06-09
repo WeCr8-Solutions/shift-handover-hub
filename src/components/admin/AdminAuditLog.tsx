@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useUrlState } from "@/hooks/useUrlState";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -41,8 +42,7 @@ const CATEGORY_VARIANT: Record<EventCategory, "default" | "secondary" | "destruc
   system: "outline",
 };
 
-export function AdminAuditLog() {
-  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+export function AdminAuditLog() {  const [categoryFilter, setCategoryFilter] = useUrlState<string>("cat", "all");
   const [search, setSearch] = useState("");
   const [selectedEvent, setSelectedEvent] = useState<AuditEvent | null>(null);
 

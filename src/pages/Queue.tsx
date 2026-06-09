@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useUrlState } from "@/hooks/useUrlState";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQueue, QueueStatus, QueueItemType } from "@/hooks/useQueue";
 import { useAdminAccess } from "@/hooks/useAdminData";
@@ -81,12 +82,11 @@ export default function Queue() {
   const validTabs: QueueTab[] = ["queue", "outside-processing", "ncr", "history"];
   const validViews: QueueView[] = ["kanban", "list", "calendar"];
 
-  const [activeTab, setActiveTab] = useState<QueueTab>(
-    urlTab && validTabs.includes(urlTab) ? urlTab : "queue"
-  );
-  const [view, setView] = useState<QueueView>(
-    urlView && validViews.includes(urlView) ? urlView : "kanban"
-  );
+  const [rawTab, setActiveTab] = useUrlState<QueueTab>("tab", "queue");
+  const [rawView, setView] = useUrlState<QueueView>("view", "kanban");
+  // Coerce invalid URL values back to defaults without breaking deep links.
+  const activeTab: QueueTab = validTabs.includes(rawTab) ? rawTab : "queue";
+  const view: QueueView = validViews.includes(rawView) ? rawView : "kanban";
   const [createDialogOpen, setCreateDialogOpen] = useState(urlAction === "new");
   const [selectedItemId, setSelectedItemId] = useState<string | null>(urlItemId);
 

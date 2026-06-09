@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useUrlState } from "@/hooks/useUrlState";
 import { QRCodeSVG } from "qrcode.react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -321,7 +322,7 @@ function QrPanel({ asset }: { asset: QrAsset }) {
 }
 
 export function PromotionsHub({ organizationId = null }: { organizationId?: string | null }) {
-  const [activeTab, setActiveTab] = useState("promotions");
+  const [activeTab, setActiveTab] = useUrlState<string>("promoSub", "promotions");
   const [promoCampaigns, setPromoCampaigns] = useState<PromoCampaign[]>([]);
   const [socialProfiles, setSocialProfiles] = useState<CompanySocialProfile[]>([]);
   const [loading, setLoading] = useState(true);

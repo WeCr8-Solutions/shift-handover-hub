@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
+import { useUrlState } from "@/hooks/useUrlState";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -61,9 +62,7 @@ export function SmartAlertPanel({
   onNavigateToItem,
   className,
 }: SmartAlertPanelProps) {
-  const navigate = useNavigate();
-  const [typeFilter, setTypeFilter] = useState<SmartAlertType | "all">("all");
-  const [sevFilter, setSevFilter] = useState<SmartAlertSeverity | "all">("all");
+  const navigate = useNavigate();  const [typeFilter, setTypeFilter] = useUrlState<SmartAlertType | "all">("alertType", "all");  const [sevFilter, setSevFilter] = useUrlState<SmartAlertSeverity | "all">("alertSev", "all");
   const [expanded, setExpanded] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [dismissed, setDismissed] = useState<Record<string, number>>(() => loadDismissed());

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useUrlState } from "@/hooks/useUrlState";
 import { QRCodeSVG } from "qrcode.react";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrganizationInvites, OrganizationInvite } from "@/hooks/useOrganizationInvites";
@@ -89,7 +90,7 @@ export function InviteCodeGenerator({ defaultTeamId }: InviteCodeGeneratorProps 
   const { toast } = useToast();
   const { limits, plan } = useEntitlements();
 
-  const [activeTab, setActiveTab] = useState("invites");
+  const [activeTab, setActiveTab] = useUrlState<string>("inviteTab", "invites");
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showQRDialog, setShowQRDialog] = useState(false);
   const [selectedInvite, setSelectedInvite] = useState<OrganizationInvite | null>(null);

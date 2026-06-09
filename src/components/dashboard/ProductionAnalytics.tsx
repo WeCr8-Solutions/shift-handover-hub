@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
+import { useUrlState } from "@/hooks/useUrlState";
 import { Badge } from "@/components/ui/badge";
 import { RefreshIndicator } from "./RefreshIndicator";
 import { BarChart3, PieChart as PieChartIcon, TrendingUp, Filter, Activity, Users, Wrench, AlertOctagon } from "lucide-react";
@@ -233,8 +234,7 @@ function useTrendData(filteredHandoffs: HandoffRecord[]) {
 
 export function ProductionAnalytics({
   stations, allStations, handoffs, isRefreshing = false, lastRefreshedAt = null, onRefresh,
-}: ProductionAnalyticsProps) {
-  const [shiftFilter, setShiftFilter] = useState<ShiftFilter>("all");
+}: ProductionAnalyticsProps) {  const [shiftFilter, setShiftFilter] = useUrlState<ShiftFilter>("shift", "all");
   const [chartView, setChartView] = useState<ChartView>("output");
   const prefersReducedMotion = useReducedMotion();
 

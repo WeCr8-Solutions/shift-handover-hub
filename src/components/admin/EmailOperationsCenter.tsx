@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useUrlState } from "@/hooks/useUrlState";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -60,8 +61,7 @@ const STATUS_ICON: Record<DeliveryStatus, React.ReactNode> = {
 
 export function EmailOperationsCenter() {
   const { user } = useAuth();
-  const qc = useQueryClient();
-  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const qc = useQueryClient();  const [categoryFilter, setCategoryFilter] = useUrlState<string>("cat", "all");
   const [suppressEmail, setSuppressEmail] = useState("");
   const [suppressDialogOpen, setSuppressDialogOpen] = useState(false);
 

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useUrlState } from "@/hooks/useUrlState";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -38,8 +39,7 @@ type ExportType = "all" | "email" | "postcard" | "consented";
 
 export function ContactsExportTab({ campaignId }: Props) {
   const [contacts, setContacts] = useState<ContactRecord[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [exportType, setExportType] = useState<ExportType>("all");
+  const [loading, setLoading] = useState(true);  const [exportType, setExportType] = useUrlState<ExportType>("etype", "all");
   const { uploadAsset } = useCampaignMarketingAssets(campaignId);
 
   const load = useCallback(async () => {

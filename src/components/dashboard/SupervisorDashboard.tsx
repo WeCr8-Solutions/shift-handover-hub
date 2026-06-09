@@ -1,4 +1,5 @@
 import { useMemo, useCallback, useState, useEffect, lazy, Suspense } from "react";
+import { useUrlState } from "@/hooks/useUrlState";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -84,7 +85,7 @@ export function SupervisorDashboard({
   const isLoading = stationsLoading || recordsLoading;
 
   // Status filter
-  const [statusFilter, setStatusFilter] = useState<StatusLabel | "all">("all");
+  const [statusFilter, setStatusFilter] = useUrlState<StatusLabel | "all">("s", "all");
 
   // Smart alerts
   const { alerts: smartAlerts, loading: smartAlertsLoading } = useSmartAlerts({

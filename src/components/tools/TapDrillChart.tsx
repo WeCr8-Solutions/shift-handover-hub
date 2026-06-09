@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useUrlState } from "@/hooks/useUrlState";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -20,7 +21,7 @@ type ViewMode = "tap-drill" | "thread-limits";
 type ThreadPercent = "75" | "50";
 
 export function TapDrillChart() {
-  const [tab, setTab] = useState<ThreadTab>("unc");
+  const [tab, setTab] = useUrlState<ThreadTab>("thread", "unc");
   const [search, setSearch] = useState("");
   const [viewMode, setViewMode] = useState<ViewMode>("tap-drill");
   const [threadPercent, setThreadPercent] = useState<ThreadPercent>("75");

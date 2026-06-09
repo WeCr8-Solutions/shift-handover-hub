@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useUrlState } from "@/hooks/useUrlState";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,8 +28,7 @@ export function CustomersLaunchpad({
   onOpenSelfServe: (organizationId: string) => void;
 }) {
   const { data, isLoading } = useAdminCustomers();
-  const [q, setQ] = useState("");
-  const [filter, setFilter] = useState<Filter>("all");
+  const [q, setQ] = useState("");  const [filter, setFilter] = useUrlState<Filter>("f", "all");
 
   const rows = useMemo(() => {
     const list = data ?? [];
