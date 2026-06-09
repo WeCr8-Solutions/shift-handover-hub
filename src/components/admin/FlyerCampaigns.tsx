@@ -49,11 +49,13 @@ import {
   Link,
   XCircle,
   Printer,
+  Image as ImageIcon,
 } from "lucide-react";
 import { FLYER_ZONES, exportZonesToCsv, type FlyerZone } from "./flyerZoneData";
 import { FieldChecklist } from "./FieldChecklist";
 import { ContactsExportTab } from "./ContactsExportTab";
 import { PrintMaterials } from "./PrintMaterials";
+import { CampaignMarketingGallery } from "./CampaignMarketingGallery";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
