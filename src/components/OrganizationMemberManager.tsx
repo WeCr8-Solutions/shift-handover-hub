@@ -858,6 +858,24 @@ export function OrganizationMemberManager({ onNavigateToInvites }: OrganizationM
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* ── Transfer-ownership confirmation ── */}
+      <AlertDialog open={Boolean(memberToPromote)} onOpenChange={(v) => !v && setMemberToPromote(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Transfer organization ownership?</AlertDialogTitle>
+            <AlertDialogDescription>
+              <strong>{memberToPromote?.profile?.display_name}</strong> will become the new owner of {organization?.name}
+              . You will be demoted to <strong>Admin</strong>. Only the new owner will be able to transfer ownership
+              back. This action is logged for audit.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmTransfer}>Transfer Ownership</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
