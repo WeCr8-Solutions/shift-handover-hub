@@ -3,26 +3,23 @@ import { renderHook, act, waitFor } from "@testing-library/react";
 import { useOrganizationMembers } from "./useOrganizationMembers";
 
 const rpc = vi.fn();
-const updateBuilder: any = {
-  update: vi.fn().mockReturnThis(),
-  eq: vi.fn().mockResolvedValue({ error: null }),
-};
-const selectBuilder: any = {
-  select: vi.fn().mockReturnThis(),
-  eq: vi.fn().mockReturnThis(),
-  maybeSingle: vi.fn().mockResolvedValue({ data: { role: "owner" }, error: null }),
-  in: vi.fn().mockReturnThis(),
-  order: vi.fn().mockResolvedValue({ data: [], error: null }),
-};
+
+function makeBuilder() {
+  const b: any = {};
+  b.select = vi.fn(() => b);
+  b.eq = vi.fn(() => b);
+  b.update = vi.fn(() => b);
+  b.in = vi.fn(() => b);
+  b.maybeSingle = vi.fn().mockResolvedValue({ data: { role: "owner" }, error: null });
+  b.order = vi.fn().mockResolvedValue({ data: [], error: null });
+  return b;
+}
+
+let builder = makeBuilder();
 
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
-    from: vi.fn((table: string) => {
-      if (table === "organization_members") {
-        return { ...selectBuilder, ...updateBuilder };
-      }
-      return selectBuilder;
-    }),
+    from: vi.fn(() => builder),
     rpc: (...args: unknown[]) => rpc(...args),
   },
 }));
@@ -32,6 +29,11 @@ vi.mock("@/contexts/AuthContext", () => ({
 }));
 
 describe("useOrganizationMembers ownership", () => {
+  beforeEach(() => {
+    builder = makeBuilder();
+    rpc.mockReset();
+  });
+
   it("transferOwnership calls transfer_org_ownership RPC", async () => {
     rpc.mockResolvedValueOnce({ error: null });
     const { result } = renderHook(() => useOrganizationMembers("org-1"));
@@ -57,15 +59,14 @@ describe("useOrganizationMembers ownership", () => {
     });
   });
 
-  it("updateMemberOrgRole routes 'owner' through the transfer RPC", async () => {
-    rpc.mockResolvedValueOnce({ error: null });
+  it("updateMemberOrgRole('admin') uses the table update path", async () => {
     const { result } = renderHook(() => useOrganizationMembers("org-1"));
     await waitFor(() => expect(result.current.loading).toBe(false));
-    // Seed a member into state via the hook's internal members list by spying on the function path
-    // We can't mutate state directly, so we exercise the non-owner branch instead:
+    builder.eq = vi.fn().mockResolvedValueOnce({ error: null });
     await act(async () => {
       await result.current.updateMemberOrgRole("member-id", "admin");
     });
-    expect(updateBuilder.update).toHaveBeenCalledWith({ role: "admin" });
+    expect(builder.update).toHaveBeenCalledWith({ role: "admin" });
+    expect(rpc).not.toHaveBeenCalled();
   });
 });

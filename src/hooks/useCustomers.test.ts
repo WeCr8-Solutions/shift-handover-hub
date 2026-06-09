@@ -2,14 +2,19 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { useCustomers } from "./useCustomers";
 
-const builder: any = {
-  select: vi.fn().mockReturnThis(),
-  eq: vi.fn().mockReturnThis(),
-  order: vi.fn().mockResolvedValue({ data: [{ id: "c1", name: "Acme", is_active: true }], error: null }),
-  insert: vi.fn().mockReturnThis(),
-  update: vi.fn().mockReturnThis(),
-  single: vi.fn().mockResolvedValue({ data: { id: "c2", name: "Beta", is_active: true }, error: null }),
-};
+function makeBuilder() {
+  const b: any = {};
+  b.select = vi.fn(() => b);
+  b.eq = vi.fn(() => b);
+  b.insert = vi.fn(() => b);
+  b.update = vi.fn(() => b);
+  b.single = vi.fn().mockResolvedValue({ data: { id: "c2", name: "Beta", is_active: true }, error: null });
+  b.order = vi.fn().mockResolvedValue({ data: [{ id: "c1", name: "Acme", is_active: true }], error: null });
+  b.then = undefined;
+  return b;
+}
+
+let builder = makeBuilder();
 
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: { from: vi.fn(() => builder) },
@@ -23,9 +28,7 @@ vi.mock("@/contexts/AuthContext", () => ({
 
 describe("useCustomers", () => {
   beforeEach(() => {
-    builder.select.mockClear();
-    builder.insert.mockClear();
-    builder.update.mockClear();
+    builder = makeBuilder();
   });
 
   it("fetches active customers on mount", async () => {
@@ -34,7 +37,7 @@ describe("useCustomers", () => {
     expect(result.current.customers[0].name).toBe("Acme");
   });
 
-  it("createCustomer trims input and rejects empty name", async () => {
+  it("createCustomer rejects empty name", async () => {
     const { result } = renderHook(() => useCustomers());
     await waitFor(() => expect(result.current.loading).toBe(false));
     let res: any;
@@ -45,9 +48,10 @@ describe("useCustomers", () => {
   });
 
   it("deactivateCustomer marks is_active=false", async () => {
-    builder.eq.mockResolvedValueOnce({ error: null });
     const { result } = renderHook(() => useCustomers());
     await waitFor(() => expect(result.current.loading).toBe(false));
+    // Make the final eq() awaitable for the deactivate call
+    builder.eq = vi.fn().mockResolvedValueOnce({ error: null });
     await act(async () => {
       await result.current.deactivateCustomer("c1");
     });
