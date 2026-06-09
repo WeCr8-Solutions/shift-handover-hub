@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@/test/test-utils";
 import userEvent from "@testing-library/user-event";
 import { StationDeliveryCheckInDialog } from "./StationDeliveryCheckInDialog";
+import type { DeliveryRequest } from "@/hooks/useDeliveryRequests";
 
 const acceptDelivery = vi.fn();
 const baseDelivery = {
