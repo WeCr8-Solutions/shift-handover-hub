@@ -61,7 +61,7 @@ export function MachineProfileMarketplace({ stationId, stationName, open, onOpen
   const [verifyingId, setVerifyingId] = useState<string | null>(null);
   const [assigningId, setAssigningId] = useState<string | null>(null);
   const [detailMachine, setDetailMachine] = useState<MachineLibraryEntry | null>(null);
-  const [activeTab, setActiveTab] = useState("browse");
+  const [activeTab, setActiveTab] = useUrlState<string>("tab", "browse");
 
   const manufacturers = useMemo(() => {
     const set = new Set(library.map((m) => m.manufacturer));
