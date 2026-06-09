@@ -28,4 +28,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'promo-code': promoCode,
   'handoff-notification': handoffNotification,
   'concierge-go-live': conciergeGoLive,
+  'concierge-finalized-pack': conciergeFinalizedPack,
 }
