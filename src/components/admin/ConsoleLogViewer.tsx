@@ -26,7 +26,8 @@ export function ConsoleLogViewer({
   maxHeight = 300,
   defaultExpanded = false,
 }: ConsoleLogViewerProps) {
-  const [isOpen, setIsOpen] = useState(defaultExpanded);  const [levelFilter, setLevelFilter] = useUrlState<LogLevel>("lvl", "all");
+  const [isOpen, setIsOpen] = useState(defaultExpanded);
+  const [levelFilter, setLevelFilter] = useUrlState<LogLevel>("lvl", "all");
   const [copied, setCopied] = useState(false);
 
   const levelCounts = useMemo(() => {

@@ -94,7 +94,8 @@ export function StationManagement({ isAdmin, access }: StationManagementProps) {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [editingStation, setEditingStation] = useState<StationWithTeam | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [viewMode, setViewMode] = useState<ViewMode>("grouped");  const [selectedOrg, setSelectedOrg] = useUrlState<string>("smOrg", "all");
+  const [viewMode, setViewMode] = useState<ViewMode>("grouped");
+  const [selectedOrg, setSelectedOrg] = useUrlState<string>("smOrg", "all");
 
   // Form state
   const [formData, setFormData] = useState({

@@ -228,7 +228,8 @@ export function SystemUpdatesManager() {
   const { isAdmin } = useAdminAccess();
   const { updates, loading, fetchUpdates, createUpdate, editUpdate, deleteUpdate, suggestNextVersion } = useGlobalUpdates();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingEntry, setEditingEntry] = useState<GlobalUpdate | undefined>();  const [filterCategory, setFilterCategory] = useUrlState<string>("cat", "all");
+  const [editingEntry, setEditingEntry] = useState<GlobalUpdate | undefined>();
+  const [filterCategory, setFilterCategory] = useUrlState<string>("cat", "all");
 
   const filtered = filterCategory === "all" ? updates : updates.filter((u) => u.category === filterCategory);
   const publishedCount = updates.filter((u) => u.is_visible_to_users).length;

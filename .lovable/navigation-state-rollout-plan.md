@@ -15,8 +15,13 @@ form drafts — across every authenticated surface of the app.
 
 ## Completed surfaces
 
-- **Public blog (`/blog`)** — category filter now lives in `?category=…`. Deep-linkable and Back-restorable.
-- **Admin → Blog editor (`BlogAdmin`)** — `editingPost` persisted to sessionStorage on every change. On mount, an unsaved "new post" draft auto-reopens the dialog with a "Draft restored" banner and a Discard button. Drafts clear on successful Save only.
+- **Public blog (`/blog`)** — category filter in `?category=…`. Deep-linkable and Back-restorable.
+- **Admin → Blog editor (`BlogAdmin`)** — `editingPost` persisted to sessionStorage with auto-reopen + "Draft restored" banner. Drafts clear on Save.
+- **2026-06-09 sweep — URL-state lift across all tabbed/filterable surfaces.** See `.lovable/audits/2026-06-nav-state-sweep.md` for the full surface inventory, URL-key registry, and per-file change log. Covers:
+  - Pages: `Admin`, `Teams`, `Queue` (`tab`+`view` write-back), `Tools`, `Updates`, `OperatorProfile` (cert filter), `ManufacturingVisibility100Admin` (`tab`+`sort`+`ed`).
+  - Admin child panels (23): `OrgDetailView`, `PromotionsHub`, `FlyerCampaigns`, `CustomerSuccessPanel`, `WorkOrderManagement`, `UserManagement`, `StationManagement`, `MachineMonitorPanel`, `ActivityLogs`, `AdminAuditLog`, `DataAccessLogs`, `DevIssueQueue`, `EmailOperationsCenter`, `IssuesManagement`, `LearnIdeasReview`, `MachineLibraryManagement`, `PerformanceUpdatesReview`, `SystemUpdatesManager`, `UserJourneyDebugPanel`, `CampaignMarketingGallery`, `ContactsExportTab`, `ConsoleLogViewer`, `CustomersLaunchpad`, `InspectionToolsCatalog`, `MachiningOperationsCatalog`, `BrandVideoLibrary`.
+  - App-wide: `SmartAlertPanel`, `ProductionAnalytics`, `SupervisorDashboard`, `QueueCalendarView`, `WorkOrderStatusList`, `MachineProfileMarketplace`, `InviteCodeGenerator`, `TapDrillChart`.
+  - Already self-persisting (left as-is): `Settings` (hash + localStorage), `AuditHistoryCenter` (manual `setSearchParams`), `OperatorProfile` main tab.
 
 ## Pending rollout (priority order)
 

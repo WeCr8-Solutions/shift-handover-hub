@@ -39,7 +39,8 @@ type ExportType = "all" | "email" | "postcard" | "consented";
 
 export function ContactsExportTab({ campaignId }: Props) {
   const [contacts, setContacts] = useState<ContactRecord[]>([]);
-  const [loading, setLoading] = useState(true);  const [exportType, setExportType] = useUrlState<ExportType>("etype", "all");
+  const [loading, setLoading] = useState(true);
+  const [exportType, setExportType] = useUrlState<ExportType>("etype", "all");
   const { uploadAsset } = useCampaignMarketingAssets(campaignId);
 
   const load = useCallback(async () => {

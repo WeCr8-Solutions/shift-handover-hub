@@ -117,7 +117,8 @@ const activityLabels: Record<string, string> = {
 
 export function ActivityLogs() {
   const [logs, setLogs] = useState<ActivityLogEntry[]>([]);
-  const [loading, setLoading] = useState(true);  const [filter, setFilter] = useUrlState<ActivityType | "all">("act", "all");
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useUrlState<ActivityType | "all">("act", "all");
   const { isAdmin, isDeveloper } = useAdminAccess();
   const hasFullAccess = isAdmin || isDeveloper;
 

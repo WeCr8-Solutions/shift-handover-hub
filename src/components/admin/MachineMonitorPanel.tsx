@@ -119,7 +119,8 @@ function MonitorContent({ isAdmin }: { isAdmin: boolean }) {
   const { stations, loading: stationsLoading } = useAllStations();
   const { organizations } = useAllOrganizations();
 
-  const [searchQuery, setSearchQuery] = useState("");  const [selectedOrg, setSelectedOrg] = useUrlState<string>("mmOrg", "all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedOrg, setSelectedOrg] = useUrlState<string>("mmOrg", "all");
   const [selectedStationId, setSelectedStationId] = useState<string | null>(null);
 
   // Get selected org ID for equipment fetch

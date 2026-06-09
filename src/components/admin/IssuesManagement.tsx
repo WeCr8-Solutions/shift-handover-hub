@@ -86,7 +86,9 @@ export function IssuesManagement() {
   const { user } = useAuth();
   const [issues, setIssues] = useState<Issue[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");  const [statusFilter, setStatusFilter] = useUrlState<string>("s", "all");  const [severityFilter, setSeverityFilter] = useUrlState<string>("sev", "all");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useUrlState<string>("s", "all");
+  const [severityFilter, setSeverityFilter] = useUrlState<string>("sev", "all");
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [updating, setUpdating] = useState(false);

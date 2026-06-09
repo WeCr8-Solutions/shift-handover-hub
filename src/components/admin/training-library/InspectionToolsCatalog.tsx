@@ -31,7 +31,9 @@ export function InspectionToolsCatalog({ isPlatformAdmin }: Props) {
   const { categories, allTools: tools, loading } = useInspectionTools({
     includeHidden: true,
   });
-  const [query, setQuery] = useState("");  const [categorySlug, setCategorySlug] = useUrlState<string>("cat", "all");  const [profession, setProfession] = useUrlState<string>("prof", "all");
+  const [query, setQuery] = useState("");
+  const [categorySlug, setCategorySlug] = useUrlState<string>("cat", "all");
+  const [profession, setProfession] = useUrlState<string>("prof", "all");
   const [activeTool, setActiveTool] = useState<InspectionTool | null>(null);
 
   const filtered = useMemo(() => {
