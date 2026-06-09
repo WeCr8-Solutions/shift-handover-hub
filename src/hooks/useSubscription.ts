@@ -2,6 +2,14 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useOrgContext } from '@/contexts/OrgContext';
 import { supabase } from '@/integrations/supabase/client';
+import {
+  PRICING_TIERS_LEGACY,
+  ERP_ADDON_TIERS_LEGACY,
+  TIERS,
+  ADDONS,
+  TIER_META,
+  FAQ,
+} from '@/lib/subscriptionTiers';
 
 export type SubscriptionTier = 'single' | 'team' | 'enterprise' | 'gca_pro' | null;
 
@@ -12,6 +20,13 @@ interface SubscriptionState {
   isLoading: boolean;
   error: string | null;
 }
+
+// Pricing tiers — sourced from `src/content/subscription-tiers.md` (single
+// source of truth). Re-exported with the legacy shape so existing imports
+// (`PRICING_TIERS.team.priceId`, `.features`, …) keep working unchanged.
+export const PRICING_TIERS = PRICING_TIERS_LEGACY;
+export { TIERS, ADDONS, TIER_META, FAQ };
+
 
 // Pricing tiers configuration
 export const PRICING_TIERS = {
