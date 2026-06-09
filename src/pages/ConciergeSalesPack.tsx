@@ -139,6 +139,7 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
   const [jobLineRepName, setJobLineRepName] = useState<string>("");
   const [jobLineRepTitle, setJobLineRepTitle] = useState<string>(DEFAULT_JOBLINE_TITLE);
   const [billingEmailOverride, setBillingEmailOverride] = useState<string>("");
+  const [repTalentUrl, setRepTalentUrl] = useState<string>(DEFAULT_REP_TALENT_URL);
   const [repLoaded, setRepLoaded] = useState(false);
 
   // Load saved rep + billing state once per engagement
@@ -151,6 +152,7 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
         if (v.salesRepTitle) setSalesRepTitle(v.salesRepTitle);
         if (v.jobLineRepName) setJobLineRepName(v.jobLineRepName);
         if (v.jobLineRepTitle) setJobLineRepTitle(v.jobLineRepTitle);
+        if (typeof v.repTalentUrl === "string") setRepTalentUrl(v.repTalentUrl);
       }
       const billing = localStorage.getItem(billingStorageKey);
       if (billing) setBillingEmailOverride(billing);
@@ -170,23 +172,29 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
     try {
       localStorage.setItem(
         repStorageKey,
-        JSON.stringify({ salesRepName, salesRepTitle, jobLineRepName, jobLineRepTitle }),
+        JSON.stringify({ salesRepName, salesRepTitle, jobLineRepName, jobLineRepTitle, repTalentUrl }),
       );
     } catch {}
-  }, [repLoaded, repStorageKey, salesRepName, salesRepTitle, jobLineRepName, jobLineRepTitle]);
+  }, [repLoaded, repStorageKey, salesRepName, salesRepTitle, jobLineRepName, jobLineRepTitle, repTalentUrl]);
   useEffect(() => {
     if (!repLoaded) return;
     try { localStorage.setItem(billingStorageKey, billingEmailOverride); } catch {}
   }, [repLoaded, billingStorageKey, billingEmailOverride]);
 
   const effectiveBillingEmail = billingEmailOverride || org?.billing_email || "_________________________";
-  const resetSalesRep = () => { setSalesRepName(DEFAULT_SALES_REP); setSalesRepTitle(DEFAULT_SALES_TITLE); };
+  const resetSalesRep = () => {
+    setSalesRepName(DEFAULT_SALES_REP);
+    setSalesRepTitle(DEFAULT_SALES_TITLE);
+    setRepTalentUrl(DEFAULT_REP_TALENT_URL);
+  };
   const autofillJobLineRep = () => {
     if (staffDisplayName) setJobLineRepName(staffDisplayName);
     setJobLineRepTitle(DEFAULT_JOBLINE_TITLE);
   };
   const printedSales = salesRepName ? `${salesRepName}${salesRepTitle ? ` — ${salesRepTitle}` : ""}` : "";
   const printedJobLine = jobLineRepName ? `${jobLineRepName}${jobLineRepTitle ? ` — ${jobLineRepTitle}` : ""}` : "";
+  const repTalentUrlTrimmed = repTalentUrl.trim();
+  const repTalentHandle = repTalentUrlTrimmed.replace(/^https?:\/\//i, "");
 
   const SECTIONS: { key: string; label: string }[] = [
     { key: "cover", label: "Cover" },
