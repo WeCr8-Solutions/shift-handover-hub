@@ -117,6 +117,7 @@ export default function Packages() {
       </div>
 
       <CreatePackageDialog open={createOpen} onOpenChange={setCreateOpen} />
+      <PackageBuilderDialog open={builderOpen} onOpenChange={setBuilderOpen} onCreated={() => refresh()} />
     </div>
   );
 }
