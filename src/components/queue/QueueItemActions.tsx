@@ -343,8 +343,31 @@ export function QueueItemActions({
   };
 
 
-  const handleConvertToWorkOrder = async () => {
-    if (!convertWONumber.trim()) {
+  const fetchNextWONumber = async (): Promise<string> => {
+    if (!organization?.id) return "";
+    const { data, error } = await (supabase.rpc as any)("generate_next_wo_number", {
+      _organization_id: organization.id,
+      _kind: "work_order",
+    });
+    if (error) {
+      console.error("generate_next_wo_number failed", error);
+      return "";
+    }
+    return (data as string) || "";
+  };
+
+  const handleOpenConvertDialog = async () => {
+    setConvertWONumber(item.work_order || "");
+    setConvertStationId(item.station_id || undefined);
+    setConvertDialogOpen(true);
+    // Always suggest the next sequential WO# from org numbering settings.
+    const next = await fetchNextWONumber();
+    if (next) setConvertWONumber(next);
+  };
+
+  const handleConvertToWorkOrder = async (overrideWONumber?: string) => {
+    const targetWO = (overrideWONumber ?? convertWONumber).trim();
+    if (!targetWO) {
       woToast.error("Work order number required", "Please enter a work order number", wo);
       return;
     }
