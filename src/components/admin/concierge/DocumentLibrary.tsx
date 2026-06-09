@@ -15,6 +15,9 @@ import {
 import { useConciergeDocumentRecords } from "@/hooks/useConciergeDocumentRecords";
 import { DocumentVersionsDrawer } from "./DocumentVersionsDrawer";
 import { CostEstimator, computeCost, type CostInputs } from "./CostEstimator";
+import { UploadedDocumentsSection } from "./UploadedDocumentsSection";
+import { useAdminAccess } from "@/hooks/useAdminData";
+import { useOrganization } from "@/hooks/useOrganization";
 
 interface Props {
   audience: DocumentAudience | "all";
@@ -306,7 +309,10 @@ export function DocumentLibrary({ audience, engagement, title, description }: Pr
             );
           })}
         </Tabs>
+
+        <UploadedSections orgId={orgId} engagementId={engagementId} />
       </CardContent>
+
 
       <Dialog open={!!previewBlob} onOpenChange={(open) => {
         if (!open && previewBlob) { URL.revokeObjectURL(previewBlob.url); setPreviewBlob(null); }
@@ -339,5 +345,49 @@ export function DocumentLibrary({ audience, engagement, title, description }: Pr
         documentTitle={versionsFor?.title ?? ""}
       />
     </Card>
+  );
+}
+
+/**
+ * Three collapsible categories below the generated-doc tabs: machine manuals,
+ * SOPs/procedures, and reference docs. Org admins + platform admins can upload;
+ * any org member can view.
+ */
+function UploadedSections({ orgId, engagementId }: { orgId: string | null; engagementId: string | null }) {
+  const { isAdmin, isDeveloper } = useAdminAccess();
+  const { organizationRole } = useOrganization();
+  const isOrgAdmin = organizationRole === "admin" || organizationRole === "owner";
+  const canEdit = isAdmin || isDeveloper || isOrgAdmin;
+
+  return (
+    <div className="mt-6 space-y-3">
+      <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+        Uploaded by your team
+      </div>
+      <UploadedDocumentsSection
+        orgId={orgId}
+        engagementId={engagementId}
+        category="manual"
+        title="Machine Manuals"
+        description="Operator, programming, and maintenance manuals for shop equipment."
+        canEdit={canEdit}
+      />
+      <UploadedDocumentsSection
+        orgId={orgId}
+        engagementId={engagementId}
+        category="sop"
+        title="SOPs & Procedures"
+        description="Safety SOPs, quality procedures, training packets, and shop-specific workflows."
+        canEdit={canEdit}
+      />
+      <UploadedDocumentsSection
+        orgId={orgId}
+        engagementId={engagementId}
+        category="reference"
+        title="Reference Documents"
+        description="Catch-all for forms, drawings, controlled documents, and other reference material."
+        canEdit={canEdit}
+      />
+    </div>
   );
 }

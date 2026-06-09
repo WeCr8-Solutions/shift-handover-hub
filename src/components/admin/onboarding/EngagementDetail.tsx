@@ -28,6 +28,10 @@ import { InvitesRolesBoard } from "./InvitesRolesBoard";
 import { IntakeMembersEditor } from "./IntakeMembersEditor";
 import { IntakeErpEditor } from "./IntakeErpEditor";
 import { DocumentLibrary } from "@/components/admin/concierge/DocumentLibrary";
+import { IntakeTileGrid } from "./IntakeTileGrid";
+import { OapMentorPolicyCard } from "./OapMentorPolicyCard";
+import { hasTileGridConfig } from "@/lib/concierge/intakeModuleSchema";
+import type { IntakeWorksheetKey } from "@/lib/concierge/intakeColumns";
 
 const MODULE_HELP: Record<string, { description: string; templateColumns?: string[] }> = {
   org_profile:  { description: "Capture company name, address, branding, ITAR posture, subscription tier, and seat count." },
@@ -182,6 +186,8 @@ export function EngagementDetail({ engagementId, onBack }: { engagementId: strin
 
       <DocumentLibrary audience="all" engagement={engagement} />
 
+      <OapMentorPolicyCard orgId={engagement.organization_id} canEdit />
+
       <ConciergeAuditTimeline engagementId={engagement.id} />
 
 
@@ -251,6 +257,12 @@ export function EngagementDetail({ engagementId, onBack }: { engagementId: strin
                 organizationId={engagement.organization_id}
                 moduleKey={item.module_key}
                 templateColumns={MODULE_HELP[item.module_key]!.templateColumns!}
+              />
+            )}
+            {hasTileGridConfig(item.module_key as IntakeWorksheetKey) && (
+              <IntakeTileGrid
+                module={item.module_key as IntakeWorksheetKey}
+                orgId={engagement.organization_id}
               />
             )}
           </TabsContent>
