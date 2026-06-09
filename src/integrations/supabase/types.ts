@@ -1619,6 +1619,113 @@ export type Database = {
           },
         ]
       }
+      concierge_uploaded_documents: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          engagement_id: string | null
+          file_size_bytes: number | null
+          id: string
+          mime_type: string | null
+          organization_id: string
+          storage_bucket: string
+          storage_path: string
+          superseded_by: string | null
+          tags: string[]
+          title: string
+          updated_at: string
+          uploaded_by: string | null
+          version: number
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          engagement_id?: string | null
+          file_size_bytes?: number | null
+          id?: string
+          mime_type?: string | null
+          organization_id: string
+          storage_bucket?: string
+          storage_path: string
+          superseded_by?: string | null
+          tags?: string[]
+          title: string
+          updated_at?: string
+          uploaded_by?: string | null
+          version?: number
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          engagement_id?: string | null
+          file_size_bytes?: number | null
+          id?: string
+          mime_type?: string | null
+          organization_id?: string
+          storage_bucket?: string
+          storage_path?: string
+          superseded_by?: string | null
+          tags?: string[]
+          title?: string
+          updated_at?: string
+          uploaded_by?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "concierge_uploaded_documents_engagement_id_fkey"
+            columns: ["engagement_id"]
+            isOneToOne: false
+            referencedRelation: "concierge_payment_aging"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "concierge_uploaded_documents_engagement_id_fkey"
+            columns: ["engagement_id"]
+            isOneToOne: false
+            referencedRelation: "onboarding_engagements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "concierge_uploaded_documents_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "concierge_uploaded_documents_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "concierge_uploaded_documents_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "concierge_uploaded_documents_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_safe"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "concierge_uploaded_documents_superseded_by_fkey"
+            columns: ["superseded_by"]
+            isOneToOne: false
+            referencedRelation: "concierge_uploaded_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       current_station_status: {
         Row: {
           condition_notes: string | null
@@ -6997,6 +7104,71 @@ export type Database = {
             columns: ["cover_media_id"]
             isOneToOne: false
             referencedRelation: "training_media"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      oap_mentor_policy: {
+        Row: {
+          allow_self_certify_on_delay: boolean
+          created_at: string
+          delay_day_fallback_enabled: boolean
+          delay_days: number
+          notes: string | null
+          org_role_auto_mentors: boolean
+          organization_id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          allow_self_certify_on_delay?: boolean
+          created_at?: string
+          delay_day_fallback_enabled?: boolean
+          delay_days?: number
+          notes?: string | null
+          org_role_auto_mentors?: boolean
+          organization_id: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          allow_self_certify_on_delay?: boolean
+          created_at?: string
+          delay_day_fallback_enabled?: boolean
+          delay_days?: number
+          notes?: string | null
+          org_role_auto_mentors?: boolean
+          organization_id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "oap_mentor_policy_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "oap_mentor_policy_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oap_mentor_policy_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oap_mentor_policy_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations_safe"
             referencedColumns: ["id"]
           },
         ]
@@ -15972,6 +16144,10 @@ export type Database = {
       can_certify: {
         Args: { _org_id: string; _program: string; _user_id: string }
         Returns: boolean
+      }
+      can_certify_oap: {
+        Args: { _enrollment_id: string; _user_id: string }
+        Returns: Json
       }
       can_insert_station: {
         Args: { _actor: string; _org_id: string; _team_id: string }
