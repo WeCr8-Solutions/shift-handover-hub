@@ -192,6 +192,7 @@ export function Header() {
               {user && <NavIconButton to="/planning-center" icon={Sparkles} label="Planning Center" />}
               <NavIconButton to="/tools" icon={Wrench} label="Operator Tools" />
               {hasOrgSupervisorAccess && <NavIconButton to="/teams" icon={Users} label="Team Management" />}
+              {hasOrgSupervisorAccess && <NavIconButton to="/customers" icon={IdCard} label="Customers" />}
               {(hasOrgAdminAccess || hasOrgSupervisorAccess) && <NavIconButton to="/oap/employer" icon={ClipboardCheck} label="OAP Employer Console" />}
               {(hasOrgAdminAccess || hasOrgSupervisorAccess) && <NavIconButton to="/gca/employer" icon={GraduationCap} label="GCA Employer Console" />}
               {user && (
@@ -412,6 +413,7 @@ export function Header() {
                           <MobileNavLink to="/planning-center" icon={Sparkles} label="Planning Center" onClose={() => setMobileMenuOpen(false)} />
                           <MobileNavLink to="/tools" icon={Wrench} label="Operator Tools" onClose={() => setMobileMenuOpen(false)} />
                           {hasOrgSupervisorAccess && <MobileNavLink to="/teams" icon={Users} label="Team Management" onClose={() => setMobileMenuOpen(false)} />}
+                          {hasOrgSupervisorAccess && <MobileNavLink to="/customers" icon={IdCard} label="Customers" onClose={() => setMobileMenuOpen(false)} />}
                           {(hasOrgAdminAccess || hasOrgSupervisorAccess) && <MobileNavLink to="/oap/employer" icon={ClipboardCheck} label="OAP Employer Console" onClose={() => setMobileMenuOpen(false)} />}
                           {(hasOrgAdminAccess || hasOrgSupervisorAccess) && <MobileNavLink to="/gca/employer" icon={GraduationCap} label="GCA Employer Console" onClose={() => setMobileMenuOpen(false)} />}
                           <MobileNavLink to="/messages" icon={MessagesSquare} label={`Messages${orgMessagesUnread > 0 ? ` (${orgMessagesUnread})` : ""}`} onClose={() => setMobileMenuOpen(false)} />

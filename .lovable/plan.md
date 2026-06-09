@@ -1,64 +1,68 @@
-# Delivery Acceptance & Kanban Check-In
+## Scope
 
-Builds on the existing `delivery_requests` flow (pending → in_transit → delivered) so receiving stations explicitly **accept** work into their Kanban, and supervisors/owners never lose sight of items stuck in limbo.
+Three connected fixes around org ownership, customers, and access control.
 
-## Behavior
+### 1. Org-owner inclusion + multi-role in Members tab
 
-1. **Auto-add to Kanban on routing advance** (current behavior, kept)
-   - Work order already lands in the next station's Kanban column with an "Awaiting delivery" badge and `awaiting_delivery = true`.
+Owner is already listed in `/teams → Members`, but the row's action menu hides every org-role item when `role === 'owner'`, and `updateMemberOrgRole` only accepts `'admin' | 'member'` — so there is no way to demote an owner, transfer ownership, or promote a stranded member to owner. App roles (supervisor / operator / viewer) are also blocked on owners because the dropdown is hidden entirely.
 
-2. **New "Awaiting acceptance" state**
-   - When a delivery is marked **Delivered** by the carrier, status becomes `awaiting_acceptance` (instead of immediately clearing the flag).
-   - The receiving operator sees the WO in their Kanban with a yellow **"Accept delivery"** badge/button.
-   - Clicking **Accept** runs a new `accept_delivery` RPC that:
-     - Sets delivery `status = 'accepted'`, captures `accepted_by` / `accepted_by_name` / `accepted_at`.
-     - Clears `queue_items.awaiting_delivery`.
-     - Writes a `queue_item_history` row ("Received and accepted at <station> by <user>").
+Changes:
+- Allow promoting any active org member to owner via a new "Transfer Ownership" action (only the current owner sees it; confirmation dialog explaining the previous owner is demoted to `admin`).
+- Allow assigning/removing multiple app roles (`supervisor`, `operator`, `viewer`) on the owner row — the actions menu always shows the App Roles section, even when org role is `owner`.
+- Self-protection stays: owner cannot demote themselves unless they first transfer ownership; never let the last owner be deleted.
+- Backend RPC `transfer_org_ownership(_org_id uuid, _to_user_id uuid)` (security definer): verifies caller is current owner, atomically demotes them to `admin` and promotes target to `owner`, logs to `organization_audit_events`.
+- Hook update: extend `updateMemberOrgRole` to accept `'owner' | 'admin' | 'member'` and route to the RPC when the new role is `owner`.
 
-3. **Auto check-in on station login**
-   - When a user opens their operator station view, any deliveries to that station in `awaiting_acceptance` older than X minutes (configurable, default 0 — i.e. immediately) prompt a single "Confirm received" dialog listing all pending items. Accepting them in bulk runs the same RPC per item.
-   - Prevents lost paperwork when no one was at the station during drop-off.
+### 2. Org-owner signup / RBAC gap fixes
 
-4. **Supervisor / Owner visibility**
-   - `DeliveryHandoffPanel` extended with a new tab/filter: **Awaiting acceptance** alongside Pending / In transit.
-   - New **Supervisor Delivery Watch** card on Supervisor & Admin dashboards listing every delivery in any non-final state, with age, from→to stations, carrier, and a "Force accept" action (org admin / supervisor only) for cases where the operator has left for the day.
-   - Aging highlighting: warning at >30 min, destructive at >2 h since `delivered_at`.
+DB check shows 1 existing org (`Aymar Engineering`) whose creator never got an `owner` row — meaning whoever created it can't reach `OrganizationSettings`. Root cause to fix forward:
+- New SQL trigger `ensure_org_creator_is_owner` on `organizations` (AFTER INSERT): if `created_by` is set and no membership exists, insert `(org_id, created_by, 'owner')`. This is a safety net behind `create_org_with_owner`.
+- Backfill migration: for every org missing an owner, insert the `created_by` user as `owner` (idempotent `ON CONFLICT`).
+- RLS audit: confirm `organizations UPDATE` and `app_settings UPSERT` policies use `is_org_admin(...)` which already accepts both `owner` and `admin`. Document in code comments.
+- Add a small `OrgAccessAlert` banner on `/settings` that shows when the current user has no `owner`/`admin` membership but appears to be the org creator — gives a "Claim ownership" CTA wired to a `claim_org_ownership(_org_id)` RPC that only succeeds when `auth.uid() = organizations.created_by AND no current owner exists`.
 
-5. **Kanban indicators**
-   - Existing "Awaiting delivery" badge (Truck icon) stays for `pending`/`in_transit`.
-   - New "Awaiting acceptance" badge (PackageCheck + amber) for `awaiting_acceptance` rows.
+### 3. Customers hub page
 
-## Technical changes
+New `/customers` route (org members can view; org admins/owner can edit) listing every row from the `customers` table seeded last turn.
 
-### DB migration
-- `ALTER TABLE delivery_requests` — extend allowed `status` values via CHECK or enum: add `awaiting_acceptance`, `accepted`.
-- Add columns: `accepted_by uuid`, `accepted_by_name text`, `accepted_at timestamptz`.
-- Update `mark_delivery_delivered` RPC to set `status = 'awaiting_acceptance'` and leave `queue_items.awaiting_delivery = true`.
-- New RPC `accept_delivery(_delivery_id uuid)`:
-  - Verifies caller is org member (or station member).
-  - Sets `status = 'accepted'`, stamps acceptor.
-  - Clears `queue_items.awaiting_delivery`.
-  - Inserts `queue_item_history` audit row.
-- New RPC `force_accept_delivery(_delivery_id uuid)` restricted to supervisor/org_admin via `has_org_role` check; same effect but records `accepted_by_role = 'override'`.
-- `useDeliveryRequests` `ACTIVE_STATUSES` extended to include `awaiting_acceptance`.
+UI scope:
+- Search + create/edit/delete dialog (name, contact name, email, phone, address, notes, active toggle).
+- "Parts" expandable row showing every `part_catalog` entry assigned to that customer, with quantity + recently-used info.
+- "Recent work orders / quotes" panel: latest 10 rows from `queue_items` filtered by `customer_id`, linking to the WO detail.
+- Nav: add a "Customers" tab to `/settings` shell sidebar AND a top-level entry in the supervisor / admin Header menu.
 
-### Frontend
-- `useDeliveryRequests.ts` — add `markAccepted(id)` and `forceAccept(id)`; surface `accepted_*` fields.
-- `DeliveryHandoffPanel.tsx` — render `awaiting_acceptance` rows with an **Accept delivery** primary button; carrier rows keep Delivered button.
-- `QueueKanbanBoard.tsx` — second badge variant for `awaiting_acceptance`, with inline Accept button when current user is assigned to that station.
-- New `StationCheckInDialog.tsx` — mounted in `OperatorDashboard` / station view; opens once per session when there are unaccepted deliveries for the active station.
-- New `SupervisorDeliveryWatch.tsx` card — included in `SupervisorDashboard` and Admin dashboard; lists all active deliveries org-wide with age + override action.
+### 4. E2E coverage
 
-### Files touched
-- New migration (status/columns + RPCs).
-- `src/hooks/useDeliveryRequests.ts`
-- `src/components/dashboard/DeliveryHandoffPanel.tsx`
-- `src/components/dashboard/OperatorDashboard.tsx` (mount check-in dialog)
-- `src/components/dashboard/SupervisorDashboard.tsx` (add watch card)
-- `src/components/queue/QueueKanbanBoard.tsx` (new badge + inline accept)
-- New: `src/components/dashboard/StationCheckInDialog.tsx`
-- New: `src/components/dashboard/SupervisorDeliveryWatch.tsx`
+Add Playwright spec `e2e/org-ownership-and-customers.spec.ts` covering the child flows:
+1. Owner sees Transfer Ownership; transfer to admin user; old owner becomes admin; new owner can edit org settings.
+2. Owner assigns Supervisor + Operator app roles to their own row simultaneously and they persist after reload.
+3. Settings page shows `OrgAccessAlert` for a creator without membership; clicking Claim grants owner.
+4. Org admin creates customer, attaches part from catalog (default qty), creates a WO that auto-selects that customer + part with quantity pre-filled.
+5. Non-admin operator visits `/customers` and gets the read-only view (no Create button, edit/delete actions hidden).
 
-## Out of scope
-- Email / push notifications for aged deliveries (can follow in a later pass).
-- Changes to the routing engine itself.
+Extend `e2e/helpers/seed.ts` with a `seedCustomer()` helper and a second admin fixture so the ownership-transfer flow has a valid target.
+
+## Technical details
+
+**Files to add**
+- `supabase/migrations/<ts>_org_ownership_and_audit.sql` — `transfer_org_ownership` RPC, `claim_org_ownership` RPC, `ensure_org_creator_is_owner` trigger, backfill update, audit-event insert helpers.
+- `src/pages/Customers.tsx` — hub page (list + dialogs).
+- `src/components/customers/CustomerFormDialog.tsx`, `CustomerRowExpand.tsx` (parts + recent orders panels).
+- `src/components/settings/OrgAccessAlert.tsx`.
+- `e2e/org-ownership-and-customers.spec.ts`.
+- Unit tests: `src/hooks/useCustomers.test.ts`, `src/hooks/useOrganizationMembers.transfer.test.ts`.
+
+**Files to edit**
+- `src/hooks/useOrganizationMembers.ts` — widen `updateMemberOrgRole` signature; add `transferOwnership`.
+- `src/components/OrganizationMemberManager.tsx` — surface Transfer Ownership; always render App Roles section; remove `!isOwner` guard around the App Roles block; keep destructive owner actions behind confirmation.
+- `src/App.tsx` — register `/customers` route (gated by `RequireAuth` + `RequireOrg`).
+- `src/components/Header.tsx` (or relevant nav) — add Customers link for admins/supervisors.
+- `src/pages/Settings.tsx` — mount `OrgAccessAlert` near the top.
+- `src/integrations/supabase/types.ts` — regenerated post-migration.
+
+**Safety**
+- Owner-only RPCs check `is_org_admin` + role string explicitly.
+- Customers UI continues using the existing RLS policies created in the prior migration (admins write, members read, platform admin override).
+- Backfill statement is idempotent (`ON CONFLICT (organization_id, user_id) DO NOTHING`).
+- Audit row written to `organization_audit_events` for every ownership transfer and ownership claim.
+- No destructive schema changes; only additive RPCs/triggers and one INSERT backfill.

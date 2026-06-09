@@ -16493,6 +16493,10 @@ export type Database = {
         Args: { _username: string }
         Returns: boolean
       }
+      claim_org_ownership: {
+        Args: { _organization_id: string }
+        Returns: undefined
+      }
       clone_gca_bank_to_org: {
         Args: {
           _organization_id: string
@@ -17301,6 +17305,10 @@ export type Database = {
         Returns: string
       }
       sweep_expired_oap_certificates: { Args: never; Returns: number }
+      transfer_org_ownership: {
+        Args: { _organization_id: string; _to_user_id: string }
+        Returns: undefined
+      }
       unaccent_safe: { Args: { input: string }; Returns: string }
       users_are_connected: {
         Args: { _a: string; _b: string; _org_id: string }

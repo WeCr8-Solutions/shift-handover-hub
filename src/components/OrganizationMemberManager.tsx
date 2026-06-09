@@ -130,6 +130,7 @@ export function OrganizationMemberManager({ onNavigateToInvites }: OrganizationM
     removeMember,
     assignAppRole,
     removeAppRole,
+    transferOwnership,
   } = useOrganizationMembers(organization?.id || null);
   const { sendTeamInviteEmail } = useEmail();
   const { mentors, designate, setActive } = useOapMentors();
@@ -163,6 +164,8 @@ export function OrganizationMemberManager({ onNavigateToInvites }: OrganizationM
 
   // ── Remove-member confirmation ───────────────────────────────────────────
   const [memberToRemove, setMemberToRemove] = useState<OrganizationMember | null>(null);
+  // ── Transfer-ownership confirmation ──────────────────────────────────────
+  const [memberToPromote, setMemberToPromote] = useState<OrganizationMember | null>(null);
 
   // ── Filtered members (memoised) ──────────────────────────────────────────
   const filteredMembers = useMemo(() => {
@@ -267,7 +270,10 @@ export function OrganizationMemberManager({ onNavigateToInvites }: OrganizationM
   };
 
   // ── Member management actions ─────────────────────────────────────────────
-  const handleUpdateOrgRole = async (member: OrganizationMember, newRole: "admin" | "member") => {
+  const handleUpdateOrgRole = async (
+    member: OrganizationMember,
+    newRole: "owner" | "admin" | "member",
+  ) => {
     setUpdatingMember(member.id);
     const { error } = await updateMemberOrgRole(member.id, newRole);
     setUpdatingMember(null);
@@ -276,10 +282,17 @@ export function OrganizationMemberManager({ onNavigateToInvites }: OrganizationM
       toast({ title: "Failed to update role", description: error.message, variant: "destructive" });
     } else {
       toast({
-        title: "Role updated",
+        title: newRole === "owner" ? "Ownership transferred" : "Role updated",
         description: `${member.profile?.display_name}'s organization role has been updated.`,
       });
     }
+  };
+
+  const handleConfirmTransfer = async () => {
+    if (!memberToPromote) return;
+    const target = memberToPromote;
+    setMemberToPromote(null);
+    await handleUpdateOrgRole(target, "owner");
   };
 
   const handleToggleAppRole = async (member: OrganizationMember, role: AppRole) => {
@@ -682,21 +695,20 @@ export function OrganizationMemberManager({ onNavigateToInvites }: OrganizationM
                                   variant="ghost"
                                   size="icon"
                                   className="h-8 w-8"
-                                  disabled={isOwner && isSelf}
                                   aria-label={`Actions for ${member.profile?.display_name}`}
                                 >
                                   <MoreHorizontal className="h-4 w-4" />
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end" className="w-56">
+                                <DropdownMenuLabel>Organization Role</DropdownMenuLabel>
                                 {!isOwner && (
                                   <>
-                                    <DropdownMenuLabel>Organization Role</DropdownMenuLabel>
                                     <DropdownMenuItem
                                       onClick={() => handleUpdateOrgRole(member, "admin")}
                                       disabled={member.role === "admin"}
                                     >
-                                       <Shield className="w-4 h-4 mr-2 text-role-org-admin" />
+                                      <Shield className="w-4 h-4 mr-2 text-role-org-admin" />
                                       Make Admin
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
@@ -706,10 +718,23 @@ export function OrganizationMemberManager({ onNavigateToInvites }: OrganizationM
                                       <Users className="w-4 h-4 mr-2" />
                                       Make Member
                                     </DropdownMenuItem>
-                                    <DropdownMenuSeparator />
                                   </>
                                 )}
-                                <DropdownMenuLabel>App Roles</DropdownMenuLabel>
+                                {/* Transfer ownership: current user must be owner; target must not be owner or self */}
+                                {organizationRole === "owner" && !isOwner && !isSelf && (
+                                  <DropdownMenuItem onClick={() => setMemberToPromote(member)}>
+                                    <Crown className="w-4 h-4 mr-2 text-warning" />
+                                    Transfer Ownership
+                                  </DropdownMenuItem>
+                                )}
+                                {isOwner && (
+                                  <DropdownMenuItem disabled>
+                                    <Crown className="w-4 h-4 mr-2 text-warning" />
+                                    Owner (transfer required to change)
+                                  </DropdownMenuItem>
+                                )}
+                                <DropdownMenuSeparator />
+                                <DropdownMenuLabel>App Roles (multi-select)</DropdownMenuLabel>
                                 <DropdownMenuItem onClick={() => handleToggleAppRole(member, "supervisor")}>
                                   <UserCog className="w-4 h-4 mr-2 text-role-supervisor" />
                                   {member.app_roles?.includes("supervisor") ? "Remove Supervisor" : "Assign Supervisor"}
@@ -830,6 +855,24 @@ export function OrganizationMemberManager({ onNavigateToInvites }: OrganizationM
             >
               Remove
             </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* ── Transfer-ownership confirmation ── */}
+      <AlertDialog open={Boolean(memberToPromote)} onOpenChange={(v) => !v && setMemberToPromote(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Transfer organization ownership?</AlertDialogTitle>
+            <AlertDialogDescription>
+              <strong>{memberToPromote?.profile?.display_name}</strong> will become the new owner of {organization?.name}
+              . You will be demoted to <strong>Admin</strong>. Only the new owner will be able to transfer ownership
+              back. This action is logged for audit.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmTransfer}>Transfer Ownership</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

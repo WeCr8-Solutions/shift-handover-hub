@@ -15,6 +15,7 @@ import { useOrgContext } from "@/contexts/OrgContext";
 import { useSmartAlerts } from "@/hooks/useSmartAlerts";
 import { useModuleContext } from "@/hooks/useModuleContext";
 import { LazyTabContent } from "@/components/settings/LazyTabContent";
+import { OrgAccessAlert } from "@/components/settings/OrgAccessAlert";
 import {
   SETTINGS_GROUPS,
   getVisibleModules,
@@ -206,6 +207,9 @@ export default function Settings() {
       <Header />
 
       <main className="container py-6">
+        <div className="mb-4">
+          <OrgAccessAlert />
+        </div>
         <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
             <h1 className="flex items-center gap-2 text-2xl font-bold">
