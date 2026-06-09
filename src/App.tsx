@@ -158,6 +158,7 @@ const ToolComparisons = lazy(() => import("./pages/resources/ToolComparisons"));
 const ERPSelectionGuide = lazy(() => import("./pages/resources/ERPSelectionGuide"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Activate = lazy(() => import("./pages/Activate"));
+const ClaimAccountOwner = lazy(() => import("./pages/ClaimAccountOwner"));
 const Blog = lazy(() => import("./pages/Blog"));
 const SitemapPage = lazy(() => import("./pages/SitemapPage"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
