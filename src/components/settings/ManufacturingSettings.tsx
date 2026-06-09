@@ -286,13 +286,17 @@ export function ManufacturingSettings() {
             <>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label>Quote Number Prefix</Label>
-                  <Input
-                    value={form.quoteNumberPrefix}
-                    onChange={(e) => update("quoteNumberPrefix", e.target.value)}
-                    placeholder="Q"
-                    maxLength={5}
-                  />
+                  <Label>Quote Number Format</Label>
+                  <Select
+                    value={form.quoteNumberFormat}
+                    onValueChange={(v) => update("quoteNumberFormat", v as "numeric" | "alphanumeric")}
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="alphanumeric">Prefix + Number (Q-0001)</SelectItem>
+                      <SelectItem value="numeric">Numbers Only (000001)</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label>Quote Validity (days)</Label>
@@ -302,14 +306,42 @@ export function ManufacturingSettings() {
                     max={365}
                     value={form.quoteValidityDays}
                     onChange={(e) =>
-                      update(
-                        "quoteValidityDays",
-                        Math.min(365, Math.max(1, parseInt(e.target.value, 10) || 30)),
-                      )
+                      update("quoteValidityDays", Math.min(365, Math.max(1, parseInt(e.target.value, 10) || 30)))
                     }
                   />
                 </div>
               </div>
+              {form.quoteNumberFormat === "alphanumeric" && (
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label>Quote Prefix</Label>
+                    <Input value={form.quoteNumberPrefix} onChange={(e) => update("quoteNumberPrefix", e.target.value)} placeholder="Q" maxLength={8} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Separator</Label>
+                    <Input value={form.quoteNumberSeparator} onChange={(e) => update("quoteNumberSeparator", e.target.value)} placeholder="-" maxLength={3} />
+                  </div>
+                </div>
+              )}
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Number Padding (digits)</Label>
+                  <Input type="number" min={1} max={10} value={form.quoteNumberPadding} onChange={(e) => update("quoteNumberPadding", Math.min(10, Math.max(1, parseInt(e.target.value, 10) || 4)))} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Starting Number</Label>
+                  <Input type="number" min={1} value={form.quoteStartingNumber} onChange={(e) => update("quoteStartingNumber", Math.max(1, parseInt(e.target.value, 10) || 1001))} />
+                </div>
+              </div>
+              <div className="rounded-md border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+                Preview:{" "}
+                <span className="font-mono text-foreground">
+                  {form.quoteNumberFormat === "numeric"
+                    ? String(form.quoteStartingNumber).padStart(Math.max(form.quoteNumberPadding, 1), "0")
+                    : `${form.quoteNumberPrefix}${form.quoteNumberSeparator}${String(form.quoteStartingNumber).padStart(Math.max(form.quoteNumberPadding, 1), "0")}`}
+                </span>
+              </div>
+
               <SettingsSwitchRow
                 label="Require Approval Before Conversion"
                 description="Quotes must be approved before being converted to work orders"
