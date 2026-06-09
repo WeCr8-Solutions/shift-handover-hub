@@ -16531,6 +16531,7 @@ export type Database = {
         Args: { _approver_id: string; _ncr_id: string }
         Returns: undefined
       }
+      approve_quote_package: { Args: { _package_id: string }; Returns: number }
       can_act_as: {
         Args: { _actor_id: string; _target_user_id: string }
         Returns: boolean
@@ -16690,6 +16691,10 @@ export type Database = {
           _requires_itar: boolean
           _slug: string
         }
+        Returns: string
+      }
+      create_package_with_items: {
+        Args: { _items: Json; _organization_id: string; _package: Json }
         Returns: string
       }
       delete_email: {

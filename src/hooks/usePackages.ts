@@ -154,6 +154,16 @@ export function usePackages(opts?: { includeClosed?: boolean }) {
     [refresh],
   );
 
+  const approveQuotePackage = useCallback(
+    async (packageId: string) => {
+      const { data, error } = await sb.rpc("approve_quote_package", { _package_id: packageId });
+      if (error) return { error: error.message };
+      await refresh();
+      return { count: data as number };
+    },
+    [refresh],
+  );
+
   return {
     packages,
     loading,
@@ -164,6 +174,7 @@ export function usePackages(opts?: { includeClosed?: boolean }) {
     removeItem,
     cascadeDueDate,
     markShipped,
+    approveQuotePackage,
   };
 }
 

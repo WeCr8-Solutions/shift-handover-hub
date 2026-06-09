@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Package, FileText } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
+import { CustomerPackagesSection } from "./CustomerPackagesSection";
 
 interface Props {
   customerId: string;
@@ -70,7 +71,7 @@ export function CustomerRowExpand({ customerId, organizationId }: Props) {
   }
 
   return (
-    <div className="grid md:grid-cols-2 gap-4 py-3">
+    <div className="grid md:grid-cols-3 gap-4 py-3">
       <section>
         <h4 className="text-sm font-semibold flex items-center gap-1.5 mb-2">
           <Package className="w-4 h-4" /> Parts
@@ -118,6 +119,7 @@ export function CustomerRowExpand({ customerId, organizationId }: Props) {
           </ul>
         )}
       </section>
+      <CustomerPackagesSection customerId={customerId} organizationId={organizationId} />
     </div>
   );
 }

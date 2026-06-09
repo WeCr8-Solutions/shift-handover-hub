@@ -4,17 +4,21 @@ import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Plus, Package as PackageIcon, Calendar, Boxes } from "lucide-react";
+import { Plus, Package as PackageIcon, Calendar, Boxes, Hammer } from "lucide-react";
 import { usePackages } from "@/hooks/usePackages";
 import { useCustomers } from "@/hooks/useCustomers";
+import { useAdminAccess } from "@/hooks/useAdminData";
 import { PackageStatusBadge } from "@/components/packages/PackageStatusBadge";
 import { CreatePackageDialog } from "@/components/packages/CreatePackageDialog";
+import { PackageBuilderDialog } from "@/components/packages/PackageBuilderDialog";
 import { format } from "date-fns";
 
 export default function Packages() {
-  const { packages, loading } = usePackages({ includeClosed: false });
+  const { packages, loading, refresh } = usePackages({ includeClosed: false });
   const { customers } = useCustomers({ includeInactive: true });
+  const { hasOrgSupervisorAccess } = useAdminAccess();
   const [createOpen, setCreateOpen] = useState(false);
+  const [builderOpen, setBuilderOpen] = useState(false);
   const [search, setSearch] = useState("");
 
   const customerName = (id: string | null) =>
@@ -47,10 +51,18 @@ export default function Packages() {
             tooling builds.
           </p>
         </div>
-        <Button onClick={() => setCreateOpen(true)}>
-          <Plus className="w-4 h-4 mr-2" />
-          New Package
-        </Button>
+        {hasOrgSupervisorAccess && (
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setCreateOpen(true)} data-testid="pkg-new-empty">
+              <Plus className="w-4 h-4 mr-2" />
+              Empty Package
+            </Button>
+            <Button onClick={() => setBuilderOpen(true)} data-testid="pkg-new-builder">
+              <Hammer className="w-4 h-4 mr-2" />
+              Build Package
+            </Button>
+          </div>
+        )}
       </div>
 
       <div className="mb-4">
@@ -105,6 +117,7 @@ export default function Packages() {
       </div>
 
       <CreatePackageDialog open={createOpen} onOpenChange={setCreateOpen} />
+      <PackageBuilderDialog open={builderOpen} onOpenChange={setBuilderOpen} onCreated={() => refresh()} />
     </div>
   );
 }

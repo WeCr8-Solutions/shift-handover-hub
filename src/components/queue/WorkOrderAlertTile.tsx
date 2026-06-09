@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
+import { PackageChip } from "@/components/packages/PackageChip";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -264,6 +265,13 @@ export function WorkOrderAlertTile({ item, stationName, stationCode, workCenterT
                     <Badge variant="outline" className="text-[9px] px-1 py-0 flex-shrink-0">
                       <Plug className="w-2.5 h-2.5" />
                     </Badge>
+                  )}
+                  {item.package_id && (
+                    <PackageChip
+                      packageId={item.package_id}
+                      packageNumber={(item as any).package_number ?? null}
+                      sequence={item.package_sequence ?? null}
+                    />
                   )}
                 </div>
                 <div className="flex items-center gap-1">
