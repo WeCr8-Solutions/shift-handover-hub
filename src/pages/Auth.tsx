@@ -152,6 +152,29 @@ export default function Auth() {
         navigate(redirectTo, { replace: true });
         return;
       }
+      // Intent-driven routing (set during signup CTA or intent picker).
+      // Only override when the user has no org membership yet — returning users
+      // with an org should always follow the server-authoritative resolver.
+      const storedIntent = readStoredIntent();
+      if (storedIntent) {
+        const { data: membership } = await supabase
+          .from("organization_members")
+          .select("organization_id")
+          .eq("user_id", user.id)
+          .limit(1)
+          .maybeSingle();
+        if (!membership) {
+          setIntent(null);
+          if (storedIntent === "talent") {
+            navigate("/operator/profile?welcome=1", { replace: true });
+          } else {
+            navigate("/setup", { replace: true });
+          }
+          return;
+        }
+        // Has an org already — clear stale intent and fall through.
+        setIntent(null);
+      }
       // F-2/F-5: Server-authoritative routing
       const { data, error } = await supabase.rpc("resolve_post_login_destination");
       if (error) {
