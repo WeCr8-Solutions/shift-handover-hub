@@ -78,9 +78,38 @@ export default function Auth() {
   // Single unified form
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [createMode, setCreateMode] = useState(false);
+  const initialMode = searchParams.get("mode") === "signup";
+  const [createMode, setCreateMode] = useState(initialMode);
   const [displayName, setDisplayName] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  // Signup intent: "org" (shop owner / supervisor) or "talent" (operator / machinist).
+  // Persisted in sessionStorage so it survives the email-verification round-trip
+  // and Google OAuth redirect.
+  type SignupIntent = "org" | "talent";
+  const readStoredIntent = (): SignupIntent | null => {
+    if (typeof window === "undefined") return null;
+    const v = window.sessionStorage.getItem("signup_intent");
+    return v === "org" || v === "talent" ? v : null;
+  };
+  const urlIntent = (() => {
+    const v = searchParams.get("intent");
+    return v === "org" || v === "talent" ? (v as SignupIntent) : null;
+  })();
+  const [intent, setIntentState] = useState<SignupIntent | null>(urlIntent ?? readStoredIntent());
+
+  const setIntent = (v: SignupIntent | null) => {
+    setIntentState(v);
+    if (typeof window === "undefined") return;
+    if (v) window.sessionStorage.setItem("signup_intent", v);
+    else window.sessionStorage.removeItem("signup_intent");
+  };
+
+  // If URL has ?intent=, persist immediately.
+  useEffect(() => {
+    if (urlIntent) setIntent(urlIntent);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlIntent]);
 
   // Forgot password
   const [showForgotPassword, setShowForgotPassword] = useState(false);
