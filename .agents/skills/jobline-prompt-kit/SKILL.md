@@ -1,6 +1,6 @@
 ---
 name: jobline-prompt-kit
-description: Reusable, LLM-agnostic prompt templates for inspecting, debugging, and auditing the JobLine.ai codebase (React+Vite+TS, Supabase RLS, ITAR-aware, OAP/GCA/Talent/WO/Handoff). Use when the user asks for prompts to feed an external coding model (Fable, Claude, GPT, Gemini, local Ollama, etc.), wants a review checklist, or wants to audit a module, file, migration, or edge function. Two tiers: small inspection-loop prompts (single file/diff) and large architecture/user-benefit prompts (repo-wide).
+description: "Reusable, LLM-agnostic prompt templates for inspecting, debugging, and auditing the JobLine.ai codebase (React+Vite+TS, Supabase RLS, ITAR-aware, OAP/GCA/Talent/WO/Handoff). Use when the user asks for prompts to feed an external coding model (Fable, Claude, GPT, Gemini, local Ollama, etc.), wants a review checklist, or wants to audit a module, file, migration, or edge function. Two tiers — small inspection-loop prompts (single file/diff) and large architecture/user-benefit prompts (repo-wide)."
 ---
 
 # JobLine Prompt Kit
