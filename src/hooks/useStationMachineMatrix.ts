@@ -13,7 +13,7 @@ export interface PurchaseRow {
   id: string;
   machine_library_id: string;
   is_active: boolean;
-  machine?: { display_name?: string | null; manufacturer?: string | null; model?: string | null } | null;
+  machine?: { manufacturer?: string | null; model?: string | null; machine_type?: string | null } | null;
 }
 export interface AssignmentRow { station_id: string; purchase_id: string }
 
@@ -33,7 +33,7 @@ export function useStationMachineMatrix(orgId: string | null | undefined) {
           .eq("organization_id", orgId)
           .order("name", { ascending: true }),
         (supabase as any).from("organization_machine_purchases")
-          .select("id, machine_library_id, is_active, machine:verified_machine_library(display_name, manufacturer, model)")
+          .select("id, machine_library_id, is_active, machine:verified_machine_library(manufacturer, model, machine_type)")
           .eq("organization_id", orgId)
           .eq("is_active", true),
         (supabase as any).from("station_machine_assignments")
