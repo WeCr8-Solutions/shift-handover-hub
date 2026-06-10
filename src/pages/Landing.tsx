@@ -350,7 +350,7 @@ export default function Landing() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-6 sm:mb-8">
               <Button size="lg" onClick={() => {
                 handleCtaClick('start_free_trial', 'hero_section');
-                navigate("/auth");
+                navigate("/auth?intent=org&mode=signup");
               }} className="gap-2 text-sm sm:text-base px-6 sm:px-8 h-10 sm:h-12 w-full sm:w-auto">
                 Start Free Trial
                 <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -1064,7 +1064,7 @@ export default function Landing() {
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
                 <Button size="lg" onClick={() => {
                   handleCtaClick('start_free_trial', 'bottom_cta_section');
-                  navigate("/auth");
+                  navigate("/auth?intent=org&mode=signup");
                 }} className="gap-2 text-sm sm:text-base px-6 sm:px-8 h-10 sm:h-12 w-full sm:w-auto">
                   Start Free Trial
                   <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />

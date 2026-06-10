@@ -82,7 +82,7 @@ export function FreeTalentProfileRibbon() {
       </div>
 
       <Link
-        to="/auth"
+        to="/auth?intent=talent&mode=signup"
         className="flex items-center gap-1 px-3 my-1 rounded-full bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors shrink-0"
       >
         Claim <ArrowRight className="h-3.5 w-3.5" />

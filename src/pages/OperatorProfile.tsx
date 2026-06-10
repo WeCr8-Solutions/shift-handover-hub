@@ -549,12 +549,21 @@ export default function OperatorProfile() {
     <div className="min-h-screen bg-background">
       <Header />
       <main className="container py-6 max-w-4xl space-y-6">
+        {searchParams.get("welcome") === "1" && (
+          <div className="rounded-lg border border-primary/30 bg-primary/5 p-4">
+            <h2 className="text-base font-semibold">Welcome to JobLine.ai 👋</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Your free talent profile is ready. Fill in your machines, controls, software, and certifications below — then flip your profile to <strong>public</strong> so hiring shops can find you.
+            </p>
+          </div>
+        )}
         <div>
           <h1 className="text-3xl font-bold">Operator Profile</h1>
           <p className="text-muted-foreground">
             Build your professional profile so qualified employers can find you. All sections are private until you turn on discoverability.
           </p>
         </div>
+
 
         <ShareProfileCard
           username={profile?.public_username ?? null}

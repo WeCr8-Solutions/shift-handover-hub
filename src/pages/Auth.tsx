@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Factory, Loader2, AlertCircle, Ticket, ChevronDown } from "lucide-react";
+import { Factory, Loader2, AlertCircle, Ticket, ChevronDown, Building2, User, ArrowLeft } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
@@ -78,9 +78,38 @@ export default function Auth() {
   // Single unified form
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [createMode, setCreateMode] = useState(false);
+  const initialMode = searchParams.get("mode") === "signup";
+  const [createMode, setCreateMode] = useState(initialMode);
   const [displayName, setDisplayName] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  // Signup intent: "org" (shop owner / supervisor) or "talent" (operator / machinist).
+  // Persisted in sessionStorage so it survives the email-verification round-trip
+  // and Google OAuth redirect.
+  type SignupIntent = "org" | "talent";
+  const readStoredIntent = (): SignupIntent | null => {
+    if (typeof window === "undefined") return null;
+    const v = window.sessionStorage.getItem("signup_intent");
+    return v === "org" || v === "talent" ? v : null;
+  };
+  const urlIntent = (() => {
+    const v = searchParams.get("intent");
+    return v === "org" || v === "talent" ? (v as SignupIntent) : null;
+  })();
+  const [intent, setIntentState] = useState<SignupIntent | null>(urlIntent ?? readStoredIntent());
+
+  const setIntent = (v: SignupIntent | null) => {
+    setIntentState(v);
+    if (typeof window === "undefined") return;
+    if (v) window.sessionStorage.setItem("signup_intent", v);
+    else window.sessionStorage.removeItem("signup_intent");
+  };
+
+  // If URL has ?intent=, persist immediately.
+  useEffect(() => {
+    if (urlIntent) setIntent(urlIntent);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlIntent]);
 
   // Forgot password
   const [showForgotPassword, setShowForgotPassword] = useState(false);
@@ -123,6 +152,29 @@ export default function Auth() {
         navigate(redirectTo, { replace: true });
         return;
       }
+      // Intent-driven routing (set during signup CTA or intent picker).
+      // Only override when the user has no org membership yet — returning users
+      // with an org should always follow the server-authoritative resolver.
+      const storedIntent = readStoredIntent();
+      if (storedIntent) {
+        const { data: membership } = await supabase
+          .from("organization_members")
+          .select("organization_id")
+          .eq("user_id", user.id)
+          .limit(1)
+          .maybeSingle();
+        if (!membership) {
+          setIntent(null);
+          if (storedIntent === "talent") {
+            navigate("/operator/profile?welcome=1", { replace: true });
+          } else {
+            navigate("/setup", { replace: true });
+          }
+          return;
+        }
+        // Has an org already — clear stale intent and fall through.
+        setIntent(null);
+      }
       // F-2/F-5: Server-authoritative routing
       const { data, error } = await supabase.rpc("resolve_post_login_destination");
       if (error) {
@@ -143,6 +195,7 @@ export default function Auth() {
     if (createMode) {
       try { displayNameSchema.parse(displayName); } catch (e: any) { newErrors.displayName = e.errors[0].message; }
       if (password !== confirmPassword) newErrors.confirmPassword = "Passwords do not match";
+      if (!intent) newErrors.intent = "Please choose how you'll use JobLine.ai above.";
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -357,6 +410,60 @@ export default function Auth() {
               </Button>
             </div>
           )}
+
+          {createMode && !intent && (
+            <div className="space-y-2">
+              <p className="text-sm font-medium">How will you use JobLine.ai?</p>
+              <button
+                type="button"
+                onClick={() => setIntent("org")}
+                className="w-full text-left rounded-lg border border-border hover:border-primary hover:bg-primary/5 transition-colors p-3 flex items-start gap-3"
+              >
+                <Building2 className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+                <div>
+                  <div className="text-sm font-semibold">I run or work at a shop</div>
+                  <div className="text-xs text-muted-foreground">
+                    Set up your organization, invite your team, track work orders &amp; handoffs.
+                  </div>
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setIntent("talent")}
+                className="w-full text-left rounded-lg border border-border hover:border-primary hover:bg-primary/5 transition-colors p-3 flex items-start gap-3"
+              >
+                <User className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+                <div>
+                  <div className="text-sm font-semibold">I'm a CNC operator / machinist</div>
+                  <div className="text-xs text-muted-foreground">
+                    Free forever. Build a public skills profile and get found by hiring shops.
+                  </div>
+                </div>
+              </button>
+              {errors.intent && (
+                <p className="text-xs text-destructive flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />{errors.intent}
+                </p>
+              )}
+            </div>
+          )}
+
+          {createMode && intent && (
+            <div className="flex items-center justify-between rounded-md border border-border bg-muted/30 px-3 py-2 text-xs">
+              <span className="flex items-center gap-2">
+                {intent === "org" ? <Building2 className="w-3.5 h-3.5 text-primary" /> : <User className="w-3.5 h-3.5 text-primary" />}
+                Signing up as <strong>{intent === "org" ? "Shop / Organization" : "Operator (free talent profile)"}</strong>
+              </span>
+              <button
+                type="button"
+                onClick={() => setIntent(null)}
+                className="text-muted-foreground hover:text-foreground flex items-center gap-1"
+              >
+                <ArrowLeft className="w-3 h-3" />Change
+              </button>
+            </div>
+          )}
+
           {/* SSO at top — single button works for both sign-in and sign-up */}
           <Button
             type="button"
