@@ -16993,6 +16993,7 @@ export type Database = {
         Args: { _count?: number; _metric: string; _org_id: string }
         Returns: undefined
       }
+      internal_run_aymar_concierge_seed: { Args: never; Returns: Json }
       invite_setup_delegate: {
         Args: {
           p_email: string
