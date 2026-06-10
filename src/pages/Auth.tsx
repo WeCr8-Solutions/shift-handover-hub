@@ -195,6 +195,7 @@ export default function Auth() {
     if (createMode) {
       try { displayNameSchema.parse(displayName); } catch (e: any) { newErrors.displayName = e.errors[0].message; }
       if (password !== confirmPassword) newErrors.confirmPassword = "Passwords do not match";
+      if (!intent) newErrors.intent = "Please choose how you'll use JobLine.ai above.";
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
