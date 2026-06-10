@@ -16649,6 +16649,28 @@ export type Database = {
         }
         Returns: Json
       }
+      concierge_attach_existing_user: {
+        Args: {
+          _app_role?: string
+          _bucket: string
+          _email: string
+          _engagement_id: string
+          _replaces_email?: string
+        }
+        Returns: Json
+      }
+      concierge_lookup_user_by_email: {
+        Args: { _email: string; _organization_id?: string }
+        Returns: {
+          created_at: string
+          email: string
+          exists_account: boolean
+          full_name: string
+          is_member: boolean
+          org_role: string
+          user_id: string
+        }[]
+      }
       consume_activation_token: {
         Args: {
           p_dry_run?: boolean

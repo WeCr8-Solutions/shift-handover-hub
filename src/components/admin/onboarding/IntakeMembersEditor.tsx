@@ -6,10 +6,11 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Trash2, Save, UserPlus, Crown, Shield, Hammer } from "lucide-react";
+import { Plus, Trash2, Save, UserPlus, Crown, Shield, Hammer, Search, Link2, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+
 
 interface Member {
   name?: string;
@@ -197,9 +198,13 @@ export function IntakeMembersEditor({
               {supervisors.map((s, i) => (
                 <MemberRow
                   key={i}
+                  bucket="supervisor"
                   member={s}
+                  engagementId={engagementId}
+                  organizationId={organizationId}
                   onChange={(p) => updateRow("sup", i, p)}
                   onRemove={() => removeRow("sup", i)}
+                  onAttached={() => qc.invalidateQueries({ queryKey: ["intake-users-roles", engagementId] })}
                 />
               ))}
             </ul>
@@ -224,14 +229,19 @@ export function IntakeMembersEditor({
               {operators.map((o, i) => (
                 <MemberRow
                   key={i}
+                  bucket="operator"
                   member={o}
+                  engagementId={engagementId}
+                  organizationId={organizationId}
                   onChange={(p) => updateRow("op", i, p)}
                   onRemove={() => removeRow("op", i)}
+                  onAttached={() => qc.invalidateQueries({ queryKey: ["intake-users-roles", engagementId] })}
                 />
               ))}
             </ul>
           )}
         </section>
+
 
         <div className="flex items-center justify-end">
           <Button onClick={save} disabled={saving} className="gap-2">
@@ -243,15 +253,106 @@ export function IntakeMembersEditor({
   );
 }
 
+type LookupResult = {
+  exists_account: boolean;
+  user_id: string | null;
+  email: string;
+  full_name: string | null;
+  is_member: boolean;
+  org_role: string | null;
+};
+
 function MemberRow({
   member,
+  bucket,
+  engagementId,
+  organizationId,
   onChange,
   onRemove,
+  onAttached,
 }: {
   member: Member;
+  bucket: "supervisor" | "operator";
+  engagementId: string;
+  organizationId: string;
   onChange: (patch: Partial<Member>) => void;
   onRemove: () => void;
+  onAttached: () => void;
 }) {
+  const [lookup, setLookup] = useState<LookupResult | null>(null);
+  const [busy, setBusy] = useState<"none" | "lookup" | "attach">("none");
+
+  const runLookup = async () => {
+    const email = member.email?.trim().toLowerCase();
+    if (!email) {
+      toast.error("Enter an email first");
+      return;
+    }
+    setBusy("lookup");
+    setLookup(null);
+    try {
+      const { data, error } = await (supabase as any).rpc("concierge_lookup_user_by_email", {
+        _email: email,
+        _organization_id: organizationId,
+      });
+      if (error) throw error;
+      const row = Array.isArray(data) ? data[0] : data;
+      setLookup(row as LookupResult);
+      if (!row?.exists_account) toast.info("No existing account for that email");
+    } catch (e: any) {
+      toast.error("Lookup failed", { description: e?.message });
+    } finally {
+      setBusy("none");
+    }
+  };
+
+  const attach = async () => {
+    if (!lookup?.exists_account) return;
+    setBusy("attach");
+    try {
+      const { data, error } = await (supabase as any).rpc("concierge_attach_existing_user", {
+        _engagement_id: engagementId,
+        _bucket: bucket,
+        _email: lookup.email,
+        _app_role: member.app_role ?? bucket,
+        _replaces_email: member.email && member.email.toLowerCase() !== lookup.email ? member.email : null,
+      });
+      if (error) throw error;
+      toast.success(`Attached ${lookup.email} as ${bucket}`, {
+        description: data?.burned_invite_code ? `Invite ${data.burned_invite_code} burned.` : undefined,
+      });
+      onChange({ email: lookup.email });
+      onAttached();
+    } catch (e: any) {
+      toast.error("Attach failed", { description: e?.message });
+    } finally {
+      setBusy("none");
+    }
+  };
+
+  const statusBadge = (() => {
+    if (!lookup) return null;
+    if (!lookup.exists_account) {
+      return (
+        <Badge variant="outline" className="text-[10px] gap-1">
+          <AlertCircle className="w-3 h-3" /> New account
+        </Badge>
+      );
+    }
+    if (lookup.is_member) {
+      return (
+        <Badge className="text-[10px] gap-1 bg-status-ok/15 text-status-ok border-status-ok/30">
+          <CheckCircle2 className="w-3 h-3" /> Already member ({lookup.org_role})
+        </Badge>
+      );
+    }
+    return (
+      <Badge variant="secondary" className="text-[10px] gap-1">
+        <CheckCircle2 className="w-3 h-3" /> Existing user — attachable
+      </Badge>
+    );
+  })();
+
   return (
     <li className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_140px_140px_auto] gap-2 items-end rounded-md border p-2.5">
       <div>
@@ -260,7 +361,12 @@ function MemberRow({
       </div>
       <div>
         <Label className="text-[11px] text-muted-foreground">Email</Label>
-        <Input type="email" value={member.email ?? ""} onChange={(e) => onChange({ email: e.target.value })} placeholder="jane@shop.com" />
+        <Input
+          type="email"
+          value={member.email ?? ""}
+          onChange={(e) => { onChange({ email: e.target.value }); setLookup(null); }}
+          placeholder="jane@shop.com"
+        />
       </div>
       <div>
         <Label className="text-[11px] text-muted-foreground">App role</Label>
@@ -275,9 +381,38 @@ function MemberRow({
         <Label className="text-[11px] text-muted-foreground">Invite code</Label>
         <Input value={member.invite_code ?? ""} onChange={(e) => onChange({ invite_code: e.target.value })} placeholder="auto" />
       </div>
-      <Button size="icon" variant="ghost" onClick={onRemove} className="text-destructive">
+      <Button size="icon" variant="ghost" onClick={onRemove} className="text-destructive" aria-label="Remove member">
         <Trash2 className="w-4 h-4" />
       </Button>
+
+      <div className="sm:col-span-5 flex items-center gap-2 flex-wrap pt-1">
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={runLookup}
+          disabled={busy !== "none" || !member.email}
+          className="h-7 text-xs gap-1"
+        >
+          {busy === "lookup" ? <Loader2 className="w-3 h-3 animate-spin" /> : <Search className="w-3 h-3" />}
+          Check existing account
+        </Button>
+        {lookup?.exists_account && !lookup.is_member && (
+          <Button
+            size="sm"
+            onClick={attach}
+            disabled={busy !== "none"}
+            className="h-7 text-xs gap-1"
+          >
+            {busy === "attach" ? <Loader2 className="w-3 h-3 animate-spin" /> : <Link2 className="w-3 h-3" />}
+            Attach to org now (skip invite)
+          </Button>
+        )}
+        {statusBadge}
+        {lookup?.full_name && (
+          <span className="text-[11px] text-muted-foreground">{lookup.full_name}</span>
+        )}
+      </div>
     </li>
   );
 }
+
