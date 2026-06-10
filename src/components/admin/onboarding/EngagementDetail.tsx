@@ -33,7 +33,7 @@ import { OapMentorPolicyCard } from "./OapMentorPolicyCard";
 import { OrgMembersPanel } from "./OrgMembersPanel";
 import { StationMachineMatrix } from "./StationMachineMatrix";
 import { hasTileGridConfig } from "@/lib/concierge/intakeModuleSchema";
-import type { IntakeWorksheetKey } from "@/lib/concierge/intakeColumns";
+
 
 const MODULE_HELP: Record<string, { description: string; templateColumns?: string[] }> = {
   org_profile:  { description: "Capture company name, address, branding, ITAR posture, subscription tier, and seat count." },
