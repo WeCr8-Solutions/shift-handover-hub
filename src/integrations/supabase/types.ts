@@ -16649,8 +16649,8 @@ export type Database = {
         }
         Returns: Json
       }
-      concierge_assign_machine_to_station: {
-        Args: { _attach: boolean; _equipment_id: string; _station_id: string }
+      concierge_assign_purchase_to_station: {
+        Args: { _attach: boolean; _purchase_id: string; _station_id: string }
         Returns: Json
       }
       concierge_attach_existing_user: {
