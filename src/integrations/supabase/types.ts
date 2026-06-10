@@ -16663,6 +16663,10 @@ export type Database = {
         }
         Returns: Json
       }
+      concierge_delete_template_step: {
+        Args: { _step_id: string }
+        Returns: Json
+      }
       concierge_lookup_user_by_email: {
         Args: { _email: string; _organization_id?: string }
         Returns: {
@@ -16675,6 +16679,14 @@ export type Database = {
           user_id: string
         }[]
       }
+      concierge_reorder_template_steps: {
+        Args: { _ordered_step_ids: string[]; _template_id: string }
+        Returns: Json
+      }
+      concierge_set_setup_step: {
+        Args: { _completed: boolean; _org_id: string; _step: string }
+        Returns: Json
+      }
       concierge_update_org_member: {
         Args: {
           _action: string
@@ -16682,6 +16694,14 @@ export type Database = {
           _org_id: string
           _user_id: string
         }
+        Returns: Json
+      }
+      concierge_upsert_branding: {
+        Args: { _org_id: string; _patch: Json }
+        Returns: Json
+      }
+      concierge_upsert_template_step: {
+        Args: { _patch: Json; _step_id: string; _template_id: string }
         Returns: Json
       }
       consume_activation_token: {
