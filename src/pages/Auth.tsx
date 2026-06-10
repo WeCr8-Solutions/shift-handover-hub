@@ -410,6 +410,60 @@ export default function Auth() {
               </Button>
             </div>
           )}
+
+          {createMode && !intent && (
+            <div className="space-y-2">
+              <p className="text-sm font-medium">How will you use JobLine.ai?</p>
+              <button
+                type="button"
+                onClick={() => setIntent("org")}
+                className="w-full text-left rounded-lg border border-border hover:border-primary hover:bg-primary/5 transition-colors p-3 flex items-start gap-3"
+              >
+                <Building2 className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+                <div>
+                  <div className="text-sm font-semibold">I run or work at a shop</div>
+                  <div className="text-xs text-muted-foreground">
+                    Set up your organization, invite your team, track work orders &amp; handoffs.
+                  </div>
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setIntent("talent")}
+                className="w-full text-left rounded-lg border border-border hover:border-primary hover:bg-primary/5 transition-colors p-3 flex items-start gap-3"
+              >
+                <User className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+                <div>
+                  <div className="text-sm font-semibold">I'm a CNC operator / machinist</div>
+                  <div className="text-xs text-muted-foreground">
+                    Free forever. Build a public skills profile and get found by hiring shops.
+                  </div>
+                </div>
+              </button>
+              {errors.intent && (
+                <p className="text-xs text-destructive flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />{errors.intent}
+                </p>
+              )}
+            </div>
+          )}
+
+          {createMode && intent && (
+            <div className="flex items-center justify-between rounded-md border border-border bg-muted/30 px-3 py-2 text-xs">
+              <span className="flex items-center gap-2">
+                {intent === "org" ? <Building2 className="w-3.5 h-3.5 text-primary" /> : <User className="w-3.5 h-3.5 text-primary" />}
+                Signing up as <strong>{intent === "org" ? "Shop / Organization" : "Operator (free talent profile)"}</strong>
+              </span>
+              <button
+                type="button"
+                onClick={() => setIntent(null)}
+                className="text-muted-foreground hover:text-foreground flex items-center gap-1"
+              >
+                <ArrowLeft className="w-3 h-3" />Change
+              </button>
+            </div>
+          )}
+
           {/* SSO at top — single button works for both sign-in and sign-up */}
           <Button
             type="button"
