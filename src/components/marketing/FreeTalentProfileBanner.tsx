@@ -30,7 +30,7 @@ export function FreeTalentProfileBanner({
           skills, certs & OAP/GCA badges to hiring shops.
         </span>
         <Button asChild size="sm" className="gap-1">
-          <Link to="/auth">
+          <Link to="/auth?intent=talent&mode=signup">
             Claim yours <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </Button>
@@ -67,7 +67,7 @@ export function FreeTalentProfileBanner({
             </div>
           </div>
           <Button asChild size="lg" className="gap-2 shrink-0">
-            <Link to="/auth">
+            <Link to="/auth?intent=talent&mode=signup">
               Claim your profile <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
