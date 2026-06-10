@@ -102,7 +102,7 @@ export function TalentSideDoor({ className }: { className?: string }) {
                 ))}
               </ul>
               <Button asChild size="sm" className="mt-4 gap-1">
-                <Link to="/auth">
+                <Link to="/auth?intent=talent&mode=signup">
                   Claim your profile <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
               </Button>
