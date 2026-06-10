@@ -329,11 +329,25 @@ export function UserManagement({ isAdmin, isSupervisorOrAbove = false, access }:
               {user.display_name.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <p className="font-medium text-xs sm:text-sm truncate">{user.display_name}</p>
             {user.user_id === currentUser?.id && (
               <span className="text-[10px] text-muted-foreground">(You)</span>
             )}
+            {/* Mobile-only quick-reference: email + ids with copy */}
+            <div className="sm:hidden mt-1 space-y-0.5">
+              <CopyableField label="Email" value={user.email} />
+              <CopyableField label="User ID" value={user.user_id} mono />
+              {user.organization?.id && (
+                <CopyableField label="Org ID" value={user.organization.id} mono />
+              )}
+              {user.organization?.name && (
+                <p className="text-[10px] text-muted-foreground truncate">
+                  <Building2 className="inline w-2.5 h-2.5 mr-0.5" />
+                  {user.organization.name}
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </TableCell>
