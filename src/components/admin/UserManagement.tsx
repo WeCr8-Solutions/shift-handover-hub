@@ -68,6 +68,34 @@ const ORG_ROLE_CONFIG: Record<string, { label: string; icon: React.ReactNode }> 
   member: { label: "Member", icon: <User className="w-3 h-3" /> },
 };
 
+// Inline copy-to-clipboard chip used in the mobile details block under each user row
+function CopyableField({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      /* clipboard blocked */
+    }
+  };
+  return (
+    <button
+      type="button"
+      onClick={handleCopy}
+      className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors w-full text-left"
+      title={`Copy ${label}`}
+    >
+      <span className="font-medium shrink-0">{label}:</span>
+      <span className={`truncate ${mono ? "font-mono" : ""}`}>{value}</span>
+      {copied ? <Check className="w-2.5 h-2.5 shrink-0 text-primary" /> : <Copy className="w-2.5 h-2.5 shrink-0 opacity-60" />}
+    </button>
+  );
+}
+
+
 // RLS Access Level computation
 interface RLSAccessLevel {
   level: "platform_admin" | "org_owner" | "org_admin" | "supervisor" | "operator" | "viewer" | "no_access";
