@@ -44,7 +44,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Loader2, MoreHorizontal, Search, Shield, UserCog, Eye, Users as UsersIcon, Building2, Crown, User, ShieldCheck, ShieldAlert, Lock, Unlock, Info } from "lucide-react";
+import { Loader2, MoreHorizontal, Search, Shield, UserCog, Eye, Users as UsersIcon, Building2, Crown, User, ShieldCheck, ShieldAlert, Lock, Unlock, Info, Copy, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Database } from "@/integrations/supabase/types";
 import type { AdminComponentAccess } from "@/types/admin";
@@ -67,6 +67,34 @@ const ORG_ROLE_CONFIG: Record<string, { label: string; icon: React.ReactNode }> 
   admin: { label: "Admin", icon: <Shield className="w-3 h-3" /> },
   member: { label: "Member", icon: <User className="w-3 h-3" /> },
 };
+
+// Inline copy-to-clipboard chip used in the mobile details block under each user row
+function CopyableField({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      /* clipboard blocked */
+    }
+  };
+  return (
+    <button
+      type="button"
+      onClick={handleCopy}
+      className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors w-full text-left"
+      title={`Copy ${label}`}
+    >
+      <span className="font-medium shrink-0">{label}:</span>
+      <span className={`truncate ${mono ? "font-mono" : ""}`}>{value}</span>
+      {copied ? <Check className="w-2.5 h-2.5 shrink-0 text-primary" /> : <Copy className="w-2.5 h-2.5 shrink-0 opacity-60" />}
+    </button>
+  );
+}
+
 
 // RLS Access Level computation
 interface RLSAccessLevel {
@@ -329,11 +357,25 @@ export function UserManagement({ isAdmin, isSupervisorOrAbove = false, access }:
               {user.display_name.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <p className="font-medium text-xs sm:text-sm truncate">{user.display_name}</p>
             {user.user_id === currentUser?.id && (
               <span className="text-[10px] text-muted-foreground">(You)</span>
             )}
+            {/* Mobile-only quick-reference: email + ids with copy */}
+            <div className="sm:hidden mt-1 space-y-0.5">
+              <CopyableField label="Email" value={user.email} />
+              <CopyableField label="User ID" value={user.user_id} mono />
+              {user.organization?.id && (
+                <CopyableField label="Org ID" value={user.organization.id} mono />
+              )}
+              {user.organization?.name && (
+                <p className="text-[10px] text-muted-foreground truncate">
+                  <Building2 className="inline w-2.5 h-2.5 mr-0.5" />
+                  {user.organization.name}
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </TableCell>
