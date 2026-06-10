@@ -30,8 +30,10 @@ import { IntakeErpEditor } from "./IntakeErpEditor";
 import { DocumentLibrary } from "@/components/admin/concierge/DocumentLibrary";
 import { IntakeTileGrid } from "./IntakeTileGrid";
 import { OapMentorPolicyCard } from "./OapMentorPolicyCard";
+import { OrgMembersPanel } from "./OrgMembersPanel";
+import { StationMachineMatrix } from "./StationMachineMatrix";
 import { hasTileGridConfig } from "@/lib/concierge/intakeModuleSchema";
-import type { IntakeWorksheetKey } from "@/lib/concierge/intakeColumns";
+
 
 const MODULE_HELP: Record<string, { description: string; templateColumns?: string[] }> = {
   org_profile:  { description: "Capture company name, address, branding, ITAR posture, subscription tier, and seat count." },
@@ -188,6 +190,41 @@ export function EngagementDetail({ engagementId, onBack }: { engagementId: strin
 
       <OapMentorPolicyCard orgId={engagement.organization_id} canEdit />
 
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Shop structure</CardTitle>
+          <CardDescription>
+            Build out the org chart that production depends on: teams group departments, departments group stations, and stations hold one purchased machine each. All edits write to live tables and audit to the concierge log.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="teams" className="space-y-4">
+            <TabsList className="flex flex-wrap h-auto justify-start">
+              <TabsTrigger value="teams">Teams</TabsTrigger>
+              <TabsTrigger value="departments">Departments</TabsTrigger>
+              <TabsTrigger value="stations">Stations</TabsTrigger>
+              <TabsTrigger value="machines">Station ↔ Machines</TabsTrigger>
+              <TabsTrigger value="members">Members</TabsTrigger>
+            </TabsList>
+            <TabsContent value="teams">
+              <IntakeTileGrid module={"teams"} orgId={engagement.organization_id} />
+            </TabsContent>
+            <TabsContent value="departments">
+              <IntakeTileGrid module={"departments"} orgId={engagement.organization_id} />
+            </TabsContent>
+            <TabsContent value="stations">
+              <IntakeTileGrid module={"stations"} orgId={engagement.organization_id} />
+            </TabsContent>
+            <TabsContent value="machines">
+              <StationMachineMatrix organizationId={engagement.organization_id} />
+            </TabsContent>
+            <TabsContent value="members">
+              <OrgMembersPanel organizationId={engagement.organization_id} />
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
+
       <ConciergeAuditTimeline engagementId={engagement.id} />
 
 
@@ -259,9 +296,9 @@ export function EngagementDetail({ engagementId, onBack }: { engagementId: strin
                 templateColumns={MODULE_HELP[item.module_key]!.templateColumns!}
               />
             )}
-            {hasTileGridConfig(item.module_key as IntakeWorksheetKey) && (
+            {hasTileGridConfig(item.module_key) && (
               <IntakeTileGrid
-                module={item.module_key as IntakeWorksheetKey}
+                module={item.module_key}
                 orgId={engagement.organization_id}
               />
             )}

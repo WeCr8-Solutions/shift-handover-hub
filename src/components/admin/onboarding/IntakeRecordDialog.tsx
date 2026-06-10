@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import type { IntakeModuleConfig, FieldDef } from "@/lib/concierge/intakeModuleSchema";
 
 interface Props {
@@ -14,6 +16,8 @@ interface Props {
   onOpenChange: (o: boolean) => void;
   config: IntakeModuleConfig;
   record: Record<string, any> | null;
+  /** Organization id used to scope dynamic select_from options. */
+  orgId: string | null;
   onSubmit: (values: Record<string, any>) => Promise<void> | void;
   busy?: boolean;
 }
@@ -21,12 +25,57 @@ interface Props {
 function buildInitial(config: IntakeModuleConfig, record: Record<string, any> | null) {
   const out: Record<string, any> = {};
   config.fields.forEach((f) => {
-    out[f.key] = record?.[f.key] ?? (config.defaults?.[f.key] ?? (f.type === "boolean" ? false : ""));
+    const def = config.defaults?.[f.key];
+    out[f.key] = record?.[f.key] ?? def ?? (f.type === "boolean" ? false : "");
   });
   return out;
 }
 
-export function IntakeRecordDialog({ open, onOpenChange, config, record, onSubmit, busy }: Props) {
+const NULL_OPTION = "__null__";
+
+function SelectFromField({
+  field, orgId, value, onChange,
+}: { field: FieldDef; orgId: string | null; value: any; onChange: (v: any) => void }) {
+  const src = field.source!;
+  const valueField = src.valueField ?? "id";
+  const q = useQuery({
+    queryKey: ["concierge-select-options", src.table, orgId],
+    enabled: !!orgId,
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from(src.table)
+        .select(`${valueField}, ${src.labelField}`)
+        .eq("organization_id", orgId!)
+        .order(src.labelField, { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as Array<Record<string, any>>;
+    },
+  });
+  const rows = q.data ?? [];
+  return (
+    <Select
+      value={value == null || value === "" ? (field.required ? "" : NULL_OPTION) : String(value)}
+      onValueChange={(v) => onChange(v === NULL_OPTION ? null : v)}
+    >
+      <SelectTrigger>
+        <SelectValue placeholder={q.isLoading ? "Loading…" : `Select ${field.label.toLowerCase()}…`} />
+      </SelectTrigger>
+      <SelectContent>
+        {!field.required && <SelectItem value={NULL_OPTION}>— None —</SelectItem>}
+        {rows.length === 0 && !q.isLoading && (
+          <div className="px-2 py-1.5 text-xs text-muted-foreground">No options yet.</div>
+        )}
+        {rows.map((r) => (
+          <SelectItem key={String(r[valueField])} value={String(r[valueField])}>
+            {String(r[src.labelField] ?? r[valueField])}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
+
+export function IntakeRecordDialog({ open, onOpenChange, config, record, orgId, onSubmit, busy }: Props) {
   const [values, setValues] = useState<Record<string, any>>(() => buildInitial(config, record));
 
   useEffect(() => {
@@ -38,12 +87,13 @@ export function IntakeRecordDialog({ open, onOpenChange, config, record, onSubmi
   }
 
   async function handleSubmit() {
-    // Coerce empty strings to null for nullable fields and numbers
     const payload: Record<string, any> = {};
     config.fields.forEach((f) => {
       const raw = values[f.key];
       if (f.type === "number") {
         payload[f.key] = raw === "" || raw == null ? null : Number(raw);
+      } else if (f.type === "boolean") {
+        payload[f.key] = !!raw;
       } else if (typeof raw === "string") {
         payload[f.key] = raw.trim() === "" ? null : raw.trim();
       } else {
@@ -84,6 +134,9 @@ export function IntakeRecordDialog({ open, onOpenChange, config, record, onSubmi
                     ))}
                   </SelectContent>
                 </Select>
+              )}
+              {f.type === "select_from" && (
+                <SelectFromField field={f} orgId={orgId} value={values[f.key]} onChange={(v) => setField(f.key, v)} />
               )}
               {f.type === "boolean" && (
                 <Switch checked={!!values[f.key]} onCheckedChange={(v) => setField(f.key, v)} />

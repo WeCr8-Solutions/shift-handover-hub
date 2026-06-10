@@ -9,11 +9,10 @@ import {
 import { Plus, Pencil, Trash2, LayoutGrid, Loader2 } from "lucide-react";
 import { useIntakeModule } from "@/hooks/useIntakeModule";
 import { INTAKE_MODULE_CONFIGS, hasTileGridConfig } from "@/lib/concierge/intakeModuleSchema";
-import type { IntakeWorksheetKey } from "@/lib/concierge/intakeColumns";
 import { IntakeRecordDialog } from "./IntakeRecordDialog";
 
 interface Props {
-  module: IntakeWorksheetKey;
+  module: string;
   orgId: string | null;
   title?: string;
   description?: string;
@@ -138,6 +137,7 @@ export function IntakeTileGrid({ module, orgId, title, description }: Props) {
         onOpenChange={setDialogOpen}
         config={config}
         record={editing}
+        orgId={orgId}
         onSubmit={handleSubmit}
         busy={create.isPending || update.isPending}
       />

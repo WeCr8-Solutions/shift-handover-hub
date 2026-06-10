@@ -1,65 +1,198 @@
-# Fix: Aymar Engineering missing from Live concierge
+# Concierge Full Shop-Setup CRUD — Phase 1
 
-## What's actually wrong
+Closes the blockers preventing concierge from fully organizing a shop before handoff. Phases 2 and 3 (routing steps, org profile editor, shift schedules, branding) follow in later turns and don't depend on this work.
 
-`jobline.ai` is **not** being intercepted by Vercel. Verified:
-- HTTP headers show `server: cloudflare` + `x-deployment-id` → served by Lovable's edge
-- `jobline.ai/release.json` returns commit `42e767e`, the build we just published
-- All A records (`@`, `www`, `app`, `dev`, `docs`) → `185.158.133.1` (Lovable)
+## What we're shipping
 
-The real issue: **Aymar Engineering only exists in your Test database**, not in Live. Lovable Cloud has two completely separate Postgres databases (Test and Live). Publishing syncs *schema + edge functions + secrets* between them but **never copies data**. Aymar was created while we were iterating on concierge in Test, so when you sign in on `jobline.ai` (which talks to Live), the org doesn't exist there and concierge shows nothing.
+1. **Departments CRUD** — new tile-grid module on a new tab in the engagement.
+2. **Teams CRUD** — new tile-grid module on the same tab.
+3. **Stations get `department_id` + `team_id` selects** — concierge can assign each station to a department and team without leaving the page.
+4. **Station ↔ Machine matrix** — toggle which `equipment` rows are mounted at which `stations` (writes `station_machine_assignments`).
+5. **Org members management panel** — lists current `organization_members` with avatar/email/role, plus actions: change role, remove member, transfer ownership.
 
-The `__l5e/trackevents` 502 in console is unrelated — it's Lovable's visitor telemetry, harmless noise on custom domains.
+All work is admin-gated (`has_role(auth.uid(),'admin')`) and audit-logged to `concierge_activity_log.details`.
 
-## What gets copied to Live
+## Architecture (technical)
 
-Exact row counts pulled from Test (`organization_id = 41f0e268-87d6-4981-b21e-a3c4e8245688`):
+### New module configs (`src/lib/concierge/intakeModuleSchema.ts`)
 
-| Table | Rows |
-|---|---|
-| organizations | 1 (Aymar Engineering) |
-| organization_members | 1 (zach@wecr8.info as owner) |
-| onboarding_engagements | 1 |
-| onboarding_intake_responses | 2 |
-| onboarding_checklist_items | 10 |
-| concierge_activity_log | 1 |
-| teams | 1 |
-| stations | 17 |
+```ts
+departments: {
+  table: 'departments', orgColumn: 'organization_id',
+  titleField: 'name', subtitleFields: ['code'],
+  fields: [name (req), code, description, sort_order],
+  noun: 'Department',
+}
+teams: {
+  table: 'teams', orgColumn: 'organization_id',
+  titleField: 'name', subtitleFields: ['description'],
+  fields: [name (req), description],
+  noun: 'Team',
+}
+```
 
-Tables with zero Aymar rows (skipped): organization_branding, organization_billing, subscriptions, concierge_document_records, concierge_uploaded_documents, organization_setup_steps.
+Extend the `stations` config with two new field types:
+```text
+{ key: 'department_id', type: 'select_from', source: { table: 'departments', label: 'name', value: 'id' } }
+{ key: 'team_id',       type: 'select_from', source: { table: 'teams',       label: 'name', value: 'id' } }
+```
+`FieldDef` grows a `select_from` variant. `IntakeRecordDialog` fetches options via a single keyed query (cached per org) and renders the same `<Select>`.
 
-The owner user (`7d924865-7e19-4bf8-a503-75eeeab26d03`) already exists in Live's `auth.users`, so the membership FK resolves cleanly.
+### New component: `StationMachineMatrix.tsx`
 
-## Approach
+- Loads stations + equipment + existing `station_machine_assignments` for the org.
+- Renders a compact matrix (stations rows × equipment columns, scrollable). Each cell is a small toggle.
+- Toggle calls `concierge_assign_machine_to_station(_station_id, _equipment_id, _attach)`.
+- Optimistic UI; invalidates `["station-machines", orgId]`.
 
-Write one idempotent migration with literal `INSERT … ON CONFLICT (id) DO NOTHING` statements containing the exact column values pulled from Test. Because of `ON CONFLICT DO NOTHING`:
+### New component: `OrgMembersPanel.tsx`
 
-- **In Test (apply-on-save):** rows already exist → skipped, no-op.
-- **In Live (apply-on-publish):** rows don't exist → seeded. Aymar appears in concierge.
+- Loads `organization_members` joined to `profiles` (email, full_name, avatar).
+- Row actions:
+  - **Change role** dropdown (owner / supervisor / member) → `concierge_update_org_member(action='change_role')`.
+  - **Remove** (with confirm dialog) → `concierge_update_org_member(action='remove')`.
+  - **Transfer ownership** (with confirm + destination user picker) → `concierge_update_org_member(action='transfer_owner')`.
+- RPC enforces: org has at least one owner after the operation; never removes the only owner; logs every action.
 
-This stays inside the normal Lovable workflow (no manual Live SQL editor), is reversible (a follow-up migration could delete the seeded IDs), and the migration file itself documents the seed for future devs.
+### New tab in `EngagementDetail.tsx`
 
-## Steps
+Add a top-level "Shop structure" `<Tabs>` panel above the per-module tabs:
+```
+Shop structure
+  ├── Departments (IntakeTileGrid)
+  ├── Teams (IntakeTileGrid)
+  ├── Station ↔ Machine matrix (StationMachineMatrix)
+  └── Members (OrgMembersPanel)
+```
+The existing `stations` checklist tab keeps its tile grid; the new department/team selects appear inside each station's edit dialog.
 
-1. **Dump Aymar rows from Test** for the 8 tables above, capturing all columns and FK ids verbatim.
-2. **Generate a single migration file** containing:
-   - `INSERT INTO organizations … ON CONFLICT (id) DO NOTHING`
-   - same pattern for `teams`, `stations`, `organization_members`, `onboarding_engagements`, `onboarding_intake_responses`, `onboarding_checklist_items`, `concierge_activity_log`
-   - Ordered so parent rows (organization → team → stations / engagement → intake / checklist) land before children.
-3. **Approve & run the migration.** It applies to Test (no-op), the next Publish applies it to Live (seeds the rows).
-4. **Publish** the project.
-5. **Verify** by querying Live for `organizations WHERE name='Aymar Engineering'` and signing in fresh at `jobline.ai`.
+### New hooks
 
-## Technical notes
+- `useOrgStructure(orgId)` — one combined query returning `{ departments, teams, stations, assignments }`. Used by the matrix and by the station dialog's option fetch.
+- `useOrgMembers(orgId)` — joined member list + mutations for the 3 RPC actions.
+- `useStationMachineMatrix(orgId)` — wraps the assign/detach RPC with optimistic updates.
 
-- `ON CONFLICT (id) DO NOTHING` requires each table to have `id` as a primary/unique key (all 8 do).
-- `stations` rows reference `teams.id`; insert teams before stations.
-- `organization_members` references `auth.users(id)` — the owner user already exists in Live, confirmed.
-- No RLS bypass needed: migrations run as the superuser role.
-- The `__l5e/trackevents` 502 is unrelated to this fix and will stay in console until Lovable's platform fixes their telemetry route on custom domains.
+All three integrate with `useConciergeRefresh` so concierge changes ripple through dashboards.
 
-## What this does NOT do
+### New SQL (migration)
 
-- Does not migrate any work orders, queue items, handoffs, NCRs, certificates, or quality data for Aymar (none exist in Test).
-- Does not touch any other org's data in Live.
-- Does not change any code, only inserts data.
+```sql
+-- 1. Admin-gated member management
+create or replace function public.concierge_update_org_member(
+  _org_id uuid, _user_id uuid,
+  _action text,            -- 'change_role' | 'remove' | 'transfer_owner'
+  _new_role text default null
+) returns jsonb
+security definer set search_path = public
+language plpgsql as $$
+declare _actor uuid := auth.uid(); _owner_count int;
+begin
+  if not has_role(_actor,'admin'::app_role) then
+    raise exception 'Not authorized' using errcode='42501';
+  end if;
+
+  select count(*) into _owner_count
+    from organization_members where organization_id=_org_id and role='owner';
+
+  if _action = 'change_role' then
+    if _new_role not in ('owner','supervisor','member') then
+      raise exception 'Invalid role';
+    end if;
+    -- prevent demoting the last owner
+    if _new_role <> 'owner' and exists (
+      select 1 from organization_members
+       where organization_id=_org_id and user_id=_user_id and role='owner'
+    ) and _owner_count <= 1 then
+      raise exception 'Cannot demote the only owner';
+    end if;
+    update organization_members
+       set role=_new_role
+     where organization_id=_org_id and user_id=_user_id;
+
+  elsif _action = 'remove' then
+    if exists (
+      select 1 from organization_members
+       where organization_id=_org_id and user_id=_user_id and role='owner'
+    ) and _owner_count <= 1 then
+      raise exception 'Cannot remove the only owner';
+    end if;
+    delete from organization_members
+     where organization_id=_org_id and user_id=_user_id;
+
+  elsif _action = 'transfer_owner' then
+    update organization_members set role='supervisor'
+     where organization_id=_org_id and role='owner';
+    insert into organization_members (organization_id, user_id, role, joined_at)
+    values (_org_id, _user_id, 'owner', now())
+    on conflict (organization_id,user_id) do update set role='owner';
+  else
+    raise exception 'Unknown action %', _action;
+  end if;
+
+  insert into concierge_activity_log(organization_id, actor_user_id, action, summary, details)
+  values (_org_id, _actor, 'concierge.member.'||_action,
+          format('Member %s: %s', _user_id, _action),
+          jsonb_build_object('user_id',_user_id,'new_role',_new_role));
+
+  return jsonb_build_object('ok', true);
+end $$;
+
+revoke all on function public.concierge_update_org_member(uuid,uuid,text,text) from public, anon;
+grant execute on function public.concierge_update_org_member(uuid,uuid,text,text) to authenticated;
+
+-- 2. Station ↔ machine assignment helper
+create or replace function public.concierge_assign_machine_to_station(
+  _station_id uuid, _equipment_id uuid, _attach boolean
+) returns jsonb
+security definer set search_path = public
+language plpgsql as $$
+declare _actor uuid := auth.uid(); _org uuid;
+begin
+  if not has_role(_actor,'admin'::app_role) then
+    raise exception 'Not authorized' using errcode='42501';
+  end if;
+  select organization_id into _org from stations where id=_station_id;
+  if _attach then
+    insert into station_machine_assignments (station_id, equipment_id)
+    values (_station_id, _equipment_id)
+    on conflict do nothing;
+  else
+    delete from station_machine_assignments
+     where station_id=_station_id and equipment_id=_equipment_id;
+  end if;
+  insert into concierge_activity_log(organization_id, actor_user_id, action, summary, details)
+  values (_org, _actor,
+          case when _attach then 'concierge.station.machine_attached' else 'concierge.station.machine_detached' end,
+          format('Station %s %s machine %s', _station_id, case when _attach then 'attached' else 'detached' end, _equipment_id),
+          jsonb_build_object('station_id',_station_id,'equipment_id',_equipment_id));
+  return jsonb_build_object('ok', true);
+end $$;
+
+revoke all on function public.concierge_assign_machine_to_station(uuid,uuid,boolean) from public, anon;
+grant execute on function public.concierge_assign_machine_to_station(uuid,uuid,boolean) to authenticated;
+```
+
+No new tables. No RLS changes (existing org-scoped policies + admin override cover everything).
+
+## Files touched
+
+- `src/lib/concierge/intakeModuleSchema.ts` — add `departments`, `teams`; extend `stations` with select_from fields; extend `FieldDef`/`FieldType`.
+- `src/components/admin/onboarding/IntakeRecordDialog.tsx` — support `select_from` (fetches options per source table, scoped by org).
+- `src/components/admin/onboarding/EngagementDetail.tsx` — add "Shop structure" tab block above per-module tabs.
+- `src/components/admin/onboarding/StationMachineMatrix.tsx` *(new)*.
+- `src/components/admin/onboarding/OrgMembersPanel.tsx` *(new)*.
+- `src/hooks/useOrgStructure.ts` *(new)*.
+- `src/hooks/useOrgMembers.ts` *(new)*.
+- `src/hooks/useStationMachineMatrix.ts` *(new)*.
+- `src/hooks/useConciergeRefresh.ts` — add new cache keys.
+- New migration: `concierge_update_org_member`, `concierge_assign_machine_to_station`.
+
+## Out of scope (deferred to Phase 2/3)
+
+- Routing template steps editor
+- Org profile inline editor (`organizations` row patch)
+- `organization_setup_steps` panel
+- Shift schedules / work-center config
+- Org branding editor
+
+Each can be added without reworking Phase 1.

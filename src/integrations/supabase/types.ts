@@ -16649,6 +16649,10 @@ export type Database = {
         }
         Returns: Json
       }
+      concierge_assign_purchase_to_station: {
+        Args: { _attach: boolean; _purchase_id: string; _station_id: string }
+        Returns: Json
+      }
       concierge_attach_existing_user: {
         Args: {
           _app_role?: string
@@ -16670,6 +16674,15 @@ export type Database = {
           org_role: string
           user_id: string
         }[]
+      }
+      concierge_update_org_member: {
+        Args: {
+          _action: string
+          _new_role?: string
+          _org_id: string
+          _user_id: string
+        }
+        Returns: Json
       }
       consume_activation_token: {
         Args: {
