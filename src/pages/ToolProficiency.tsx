@@ -219,20 +219,29 @@ function TestCard({
   };
 
   const printBackup = () => {
-    const md = test.printable_template_md ?? `# ${test.name}\n\n(no template)`;
+    // HTML-escape any field interpolated into the popup document to prevent
+    // stored XSS (org admins/supervisors can set test.name & template_md).
+    const esc = (s: unknown) =>
+      String(s ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#x27;");
+    const rawMd = test.printable_template_md ?? `# ${test.name}\n\n(no template)`;
     const w = window.open("", "_blank", "width=820,height=900");
     if (!w) {
       toast.error("Pop-up blocked — allow pop-ups to print");
       return;
     }
-    w.document.write(`<!doctype html><html><head><title>${test.name} — Printable</title>
+    w.document.write(`<!doctype html><html><head><title>${esc(test.name)} — Printable</title>
       <style>body{font-family:system-ui,sans-serif;max-width:760px;margin:40px auto;padding:0 24px;line-height:1.6;color:#111}
       table{border-collapse:collapse;width:100%;margin:14px 0}
       th,td{border:1px solid #999;padding:8px 10px;text-align:left;font-size:13px}
       th{background:#f4f4f4}
       h1{border-bottom:2px solid #111;padding-bottom:8px}
       pre{white-space:pre-wrap;font-family:inherit}</style></head>
-      <body><pre>${md.replace(/</g, "&lt;")}</pre>
+      <body><pre>${esc(rawMd)}</pre>
       <script>window.onload=()=>setTimeout(()=>window.print(),200)</script></body></html>`);
     w.document.close();
   };
