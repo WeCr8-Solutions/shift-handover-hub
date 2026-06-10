@@ -17384,6 +17384,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      repair_seed_aymar_concierge: { Args: never; Returns: Json }
       report_issue: {
         Args: {
           _console_logs?: Json
