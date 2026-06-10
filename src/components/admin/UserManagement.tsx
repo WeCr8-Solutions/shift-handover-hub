@@ -44,7 +44,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Loader2, MoreHorizontal, Search, Shield, UserCog, Eye, Users as UsersIcon, Building2, Crown, User, ShieldCheck, ShieldAlert, Lock, Unlock, Info } from "lucide-react";
+import { Loader2, MoreHorizontal, Search, Shield, UserCog, Eye, Users as UsersIcon, Building2, Crown, User, ShieldCheck, ShieldAlert, Lock, Unlock, Info, Copy, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Database } from "@/integrations/supabase/types";
 import type { AdminComponentAccess } from "@/types/admin";
