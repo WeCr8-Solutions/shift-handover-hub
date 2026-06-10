@@ -198,9 +198,13 @@ export function IntakeMembersEditor({
               {supervisors.map((s, i) => (
                 <MemberRow
                   key={i}
+                  bucket="supervisor"
                   member={s}
+                  engagementId={engagementId}
+                  organizationId={organizationId}
                   onChange={(p) => updateRow("sup", i, p)}
                   onRemove={() => removeRow("sup", i)}
+                  onAttached={() => qc.invalidateQueries({ queryKey: ["intake-users-roles", engagementId] })}
                 />
               ))}
             </ul>
@@ -225,14 +229,19 @@ export function IntakeMembersEditor({
               {operators.map((o, i) => (
                 <MemberRow
                   key={i}
+                  bucket="operator"
                   member={o}
+                  engagementId={engagementId}
+                  organizationId={organizationId}
                   onChange={(p) => updateRow("op", i, p)}
                   onRemove={() => removeRow("op", i)}
+                  onAttached={() => qc.invalidateQueries({ queryKey: ["intake-users-roles", engagementId] })}
                 />
               ))}
             </ul>
           )}
         </section>
+
 
         <div className="flex items-center justify-end">
           <Button onClick={save} disabled={saving} className="gap-2">
