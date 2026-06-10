@@ -207,13 +207,13 @@ export function EngagementDetail({ engagementId, onBack }: { engagementId: strin
               <TabsTrigger value="members">Members</TabsTrigger>
             </TabsList>
             <TabsContent value="teams">
-              <IntakeTileGrid module={"teams" as IntakeWorksheetKey} orgId={engagement.organization_id} />
+              <IntakeTileGrid module={"teams"} orgId={engagement.organization_id} />
             </TabsContent>
             <TabsContent value="departments">
-              <IntakeTileGrid module={"departments" as IntakeWorksheetKey} orgId={engagement.organization_id} />
+              <IntakeTileGrid module={"departments"} orgId={engagement.organization_id} />
             </TabsContent>
             <TabsContent value="stations">
-              <IntakeTileGrid module={"stations" as IntakeWorksheetKey} orgId={engagement.organization_id} />
+              <IntakeTileGrid module={"stations"} orgId={engagement.organization_id} />
             </TabsContent>
             <TabsContent value="machines">
               <StationMachineMatrix organizationId={engagement.organization_id} />
@@ -296,9 +296,9 @@ export function EngagementDetail({ engagementId, onBack }: { engagementId: strin
                 templateColumns={MODULE_HELP[item.module_key]!.templateColumns!}
               />
             )}
-            {hasTileGridConfig(item.module_key as IntakeWorksheetKey) && (
+            {hasTileGridConfig(item.module_key) && (
               <IntakeTileGrid
-                module={item.module_key as IntakeWorksheetKey}
+                module={item.module_key}
                 orgId={engagement.organization_id}
               />
             )}
