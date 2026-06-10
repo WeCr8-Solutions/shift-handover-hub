@@ -231,7 +231,43 @@ export function EngagementDetail({ engagementId, onBack }: { engagementId: strin
         </CardContent>
       </Card>
 
+      <OrgProfileQuickEditPanel organizationId={engagement.organization_id} />
+
+      <OrgSetupStepsPanel organizationId={engagement.organization_id} />
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Production defaults</CardTitle>
+          <CardDescription>
+            Routing template steps, work-center planning defaults, shift schedules, and branding. All admin-gated and audit-logged.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="routing-steps" className="space-y-4">
+            <TabsList className="flex flex-wrap h-auto justify-start">
+              <TabsTrigger value="routing-steps">Routing steps</TabsTrigger>
+              <TabsTrigger value="work-centers">Work centers</TabsTrigger>
+              <TabsTrigger value="shifts">Shifts</TabsTrigger>
+              <TabsTrigger value="branding">Branding</TabsTrigger>
+            </TabsList>
+            <TabsContent value="routing-steps">
+              <RoutingTemplateStepsEditorPanel organizationId={engagement.organization_id} />
+            </TabsContent>
+            <TabsContent value="work-centers">
+              <WorkCenterConfigEditorPanel organizationId={engagement.organization_id} />
+            </TabsContent>
+            <TabsContent value="shifts">
+              <ShiftSchedulesEditorPanel organizationId={engagement.organization_id} />
+            </TabsContent>
+            <TabsContent value="branding">
+              <OrgBrandingEditorPanel organizationId={engagement.organization_id} />
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
+
       <ConciergeAuditTimeline engagementId={engagement.id} />
+
 
 
 
