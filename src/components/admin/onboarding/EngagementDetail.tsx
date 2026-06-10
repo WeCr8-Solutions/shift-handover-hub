@@ -32,6 +32,12 @@ import { IntakeTileGrid } from "./IntakeTileGrid";
 import { OapMentorPolicyCard } from "./OapMentorPolicyCard";
 import { OrgMembersPanel } from "./OrgMembersPanel";
 import { StationMachineMatrix } from "./StationMachineMatrix";
+import { OrgProfileQuickEditPanel } from "./OrgProfileQuickEditPanel";
+import { OrgSetupStepsPanel } from "./OrgSetupStepsPanel";
+import { OrgBrandingEditorPanel } from "./OrgBrandingEditorPanel";
+import { ShiftSchedulesEditorPanel } from "./ShiftSchedulesEditorPanel";
+import { WorkCenterConfigEditorPanel } from "./WorkCenterConfigEditorPanel";
+import { RoutingTemplateStepsEditorPanel } from "./RoutingTemplateStepsEditorPanel";
 import { hasTileGridConfig } from "@/lib/concierge/intakeModuleSchema";
 
 
