@@ -464,6 +464,9 @@ export function SupervisorDashboard({
         </div>
       </div>
 
+      {/* Package Shipments KPI (assemblies / multi-WO bundles) */}
+      <PackageKPICard />
+
       {/* Production Analytics — lazy loaded */}
       <Suspense fallback={<div className="bg-card border border-border rounded-lg p-8 text-center text-muted-foreground text-sm">Loading analytics…</div>}>
         <ProductionAnalytics stations={filteredStationsForAnalytics} allStations={dbStations} handoffs={dbRecords} isRefreshing={isRefreshing} lastRefreshedAt={lastRefreshedAt} onRefresh={handleManualRefresh} />
