@@ -17386,6 +17386,10 @@ export type Database = {
         Returns: undefined
       }
       repair_seed_aymar_concierge: { Args: never; Returns: Json }
+      repair_seed_aymar_concierge_legacy_20260610: {
+        Args: never
+        Returns: Json
+      }
       report_issue: {
         Args: {
           _console_logs?: Json
