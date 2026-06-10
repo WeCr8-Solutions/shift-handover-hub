@@ -49,8 +49,13 @@ const SKIP_PATTERNS = [
 
 async function loadRoutesFromSitemap() {
   const out = new Set();
-  const files = ["sitemap.xml", "sitemap-index.xml"]; // sitemap-talent has dynamic profiles
-  for (const f of files) {
+  // Marketing sitemaps go through the SKIP_PATTERNS gate (talent profiles excluded).
+  const gated = ["sitemap.xml", "sitemap-index.xml"];
+  // sitemap-talent.xml lists per-profile public URLs that DO need static HTML for
+  // Googlebot — they ship with proper canonical/JSON-LD via Helmet but currently
+  // crawl as an empty SPA shell. Prerender them so GSC can index them.
+  const ungated = ["sitemap-talent.xml"];
+  for (const f of gated) {
     try {
       const xml = await readFile(join(PUBLIC_DIR, f), "utf8");
       const matches = xml.matchAll(/<loc>\s*https?:\/\/[^/]+([^<]*)<\/loc>/g);
@@ -58,7 +63,20 @@ async function loadRoutesFromSitemap() {
         const path = (m[1] || "").trim();
         if (!path || path.endsWith(".xml")) continue;
         if (SKIP_PATTERNS.some((re) => re.test(path))) continue;
-        // Strip trailing slash except for root
+        const clean = path === "/" ? "/" : path.replace(/\/$/, "");
+        out.add(clean);
+      }
+    } catch {
+      // ignore missing sitemap
+    }
+  }
+  for (const f of ungated) {
+    try {
+      const xml = await readFile(join(PUBLIC_DIR, f), "utf8");
+      const matches = xml.matchAll(/<loc>\s*https?:\/\/[^/]+([^<]*)<\/loc>/g);
+      for (const m of matches) {
+        const path = (m[1] || "").trim();
+        if (!path || path.endsWith(".xml")) continue;
         const clean = path === "/" ? "/" : path.replace(/\/$/, "");
         out.add(clean);
       }
@@ -68,6 +86,7 @@ async function loadRoutesFromSitemap() {
   }
   return Array.from(out).sort();
 }
+
 
 async function exists(p) {
   try { await access(p); return true; } catch { return false; }
