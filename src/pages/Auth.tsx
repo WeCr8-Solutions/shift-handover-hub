@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Factory, Loader2, AlertCircle, Ticket, ChevronDown } from "lucide-react";
+import { Factory, Loader2, AlertCircle, Ticket, ChevronDown, Building2, User, ArrowLeft } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
