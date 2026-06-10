@@ -1,198 +1,71 @@
-# Concierge Full Shop-Setup CRUD — Phase 1
+## Goal
 
-Closes the blockers preventing concierge from fully organizing a shop before handoff. Phases 2 and 3 (routing steps, org profile editor, shift schedules, branding) follow in later turns and don't depend on this work.
+When a user signs up, route them deterministically to **either** organization setup **or** talent profile creation — based on which CTA they came from, or by explicit choice on the auth page.
 
-## What we're shipping
+Today, every brand-new user who finishes signup is sent to `/setup` (org setup wizard) by `resolve_post_login_destination`, regardless of whether they wanted a shop account or a free talent profile. This buries the talent path.
 
-1. **Departments CRUD** — new tile-grid module on a new tab in the engagement.
-2. **Teams CRUD** — new tile-grid module on the same tab.
-3. **Stations get `department_id` + `team_id` selects** — concierge can assign each station to a department and team without leaving the page.
-4. **Station ↔ Machine matrix** — toggle which `equipment` rows are mounted at which `stations` (writes `station_machine_assignments`).
-5. **Org members management panel** — lists current `organization_members` with avatar/email/role, plus actions: change role, remove member, transfer ownership.
+## Changes
 
-All work is admin-gated (`has_role(auth.uid(),'admin')`) and audit-logged to `concierge_activity_log.details`.
+### 1. Intent-aware Auth page (`src/pages/Auth.tsx`)
 
-## Architecture (technical)
+- Read `?intent=org | talent` from the URL on mount; persist to `sessionStorage("signup_intent")` so it survives the email-verification round-trip.
+- When `createMode === true` **and** no intent is set, render an intent picker (two cards) above the email/password form:
+  - **"I run / work at a shop"** → sets `intent=org`. Copy: set up your organization, invite your team, track work orders.
+  - **"I'm a CNC operator / machinist"** → sets `intent=talent`. Copy: free forever, build your public skills profile.
+- Once an intent is chosen, show a small "Signing up as: Shop / Operator — change" toggle.
+- Sign-in mode is unchanged (no intent shown).
 
-### New module configs (`src/lib/concierge/intakeModuleSchema.ts`)
+### 2. Post-login routing honors intent
 
-```ts
-departments: {
-  table: 'departments', orgColumn: 'organization_id',
-  titleField: 'name', subtitleFields: ['code'],
-  fields: [name (req), code, description, sort_order],
-  noun: 'Department',
-}
-teams: {
-  table: 'teams', orgColumn: 'organization_id',
-  titleField: 'name', subtitleFields: ['description'],
-  fields: [name (req), description],
-  noun: 'Team',
-}
-```
+In the `checkOnboardingAndRedirect` effect:
 
-Extend the `stations` config with two new field types:
-```text
-{ key: 'department_id', type: 'select_from', source: { table: 'departments', label: 'name', value: 'id' } }
-{ key: 'team_id',       type: 'select_from', source: { table: 'teams',       label: 'name', value: 'id' } }
-```
-`FieldDef` grows a `select_from` variant. `IntakeRecordDialog` fetches options via a single keyed query (cached per org) and renders the same `<Select>`.
+- Before calling `resolve_post_login_destination`, check `sessionStorage("signup_intent")`.
+- If `intent === "talent"` and user has no org membership → navigate to `/operator/profile?welcome=1` and clear the stored intent.
+- If `intent === "org"` → navigate to `/setup` and clear the stored intent.
+- Otherwise fall through to the existing RPC-driven destination (covers returning users and SSO).
 
-### New component: `StationMachineMatrix.tsx`
+Google OAuth flow is covered because the intent is stored in `sessionStorage` before the redirect and read on return.
 
-- Loads stations + equipment + existing `station_machine_assignments` for the org.
-- Renders a compact matrix (stations rows × equipment columns, scrollable). Each cell is a small toggle.
-- Toggle calls `concierge_assign_machine_to_station(_station_id, _equipment_id, _attach)`.
-- Optimistic UI; invalidates `["station-machines", orgId]`.
+### 3. CTA wiring — pass `?intent=` on every signup link
 
-### New component: `OrgMembersPanel.tsx`
+Update marketing entry points so the button itself carries intent:
 
-- Loads `organization_members` joined to `profiles` (email, full_name, avatar).
-- Row actions:
-  - **Change role** dropdown (owner / supervisor / member) → `concierge_update_org_member(action='change_role')`.
-  - **Remove** (with confirm dialog) → `concierge_update_org_member(action='remove')`.
-  - **Transfer ownership** (with confirm + destination user picker) → `concierge_update_org_member(action='transfer_owner')`.
-- RPC enforces: org has at least one owner after the operation; never removes the only owner; logs every action.
+- `src/components/marketing/FreeTalentProfileBanner.tsx` → `/auth?intent=talent&mode=signup`
+- `src/components/marketing/TalentSideDoor.tsx`:
+  - Left pillar ("Find skilled talent") → `/auth?intent=org&mode=signup`
+  - Right pillar ("Showcase your skills") → `/auth?intent=talent&mode=signup`
+- Primary landing-page CTAs ("Start free trial", "Get started", "Try free for 14 days") on `src/pages/Landing.tsx` and shared marketing headers → `/auth?intent=org&mode=signup`
+- Talent-section CTAs on `/talent`, `/talent/browse`, public talent profile claim button → `/auth?intent=talent&mode=signup`
 
-### New tab in `EngagementDetail.tsx`
+Also have Auth.tsx read `?mode=signup` to auto-open `createMode`.
 
-Add a top-level "Shop structure" `<Tabs>` panel above the per-module tabs:
-```
-Shop structure
-  ├── Departments (IntakeTileGrid)
-  ├── Teams (IntakeTileGrid)
-  ├── Station ↔ Machine matrix (StationMachineMatrix)
-  └── Members (OrgMembersPanel)
-```
-The existing `stations` checklist tab keeps its tile grid; the new department/team selects appear inside each station's edit dialog.
+### 4. Talent profile bootstrap
 
-### New hooks
+`/operator/profile?welcome=1` is the existing operator profile editor. Add a small welcome banner at the top when `welcome=1`: "Welcome! Fill in your machines, controls, and skills to publish your free profile." No new route needed.
 
-- `useOrgStructure(orgId)` — one combined query returning `{ departments, teams, stations, assignments }`. Used by the matrix and by the station dialog's option fetch.
-- `useOrgMembers(orgId)` — joined member list + mutations for the 3 RPC actions.
-- `useStationMachineMatrix(orgId)` — wraps the assign/detach RPC with optimistic updates.
+### 5. Default still safe
 
-All three integrate with `useConciergeRefresh` so concierge changes ripple through dashboards.
+If a user signs up without ever hitting an intent CTA and doesn't pick a card (edge case: deep-linked `/auth` with `mode=signup`), the picker is required before the form submits — no silent fallback into the org setup wizard.
 
-### New SQL (migration)
+## Out of scope
 
-```sql
--- 1. Admin-gated member management
-create or replace function public.concierge_update_org_member(
-  _org_id uuid, _user_id uuid,
-  _action text,            -- 'change_role' | 'remove' | 'transfer_owner'
-  _new_role text default null
-) returns jsonb
-security definer set search_path = public
-language plpgsql as $$
-declare _actor uuid := auth.uid(); _owner_count int;
-begin
-  if not has_role(_actor,'admin'::app_role) then
-    raise exception 'Not authorized' using errcode='42501';
-  end if;
+- No DB / RLS / RPC changes. `resolve_post_login_destination` still owns returning-user routing.
+- No change to invite-code flow (`?invite=` already short-circuits).
+- No change to org/talent permissions or role assignment.
 
-  select count(*) into _owner_count
-    from organization_members where organization_id=_org_id and role='owner';
+## Technical details
 
-  if _action = 'change_role' then
-    if _new_role not in ('owner','supervisor','member') then
-      raise exception 'Invalid role';
-    end if;
-    -- prevent demoting the last owner
-    if _new_role <> 'owner' and exists (
-      select 1 from organization_members
-       where organization_id=_org_id and user_id=_user_id and role='owner'
-    ) and _owner_count <= 1 then
-      raise exception 'Cannot demote the only owner';
-    end if;
-    update organization_members
-       set role=_new_role
-     where organization_id=_org_id and user_id=_user_id;
+**Files edited**
+- `src/pages/Auth.tsx` — intent picker UI, `mode=signup` auto-open, sessionStorage write/read, post-login override.
+- `src/components/marketing/FreeTalentProfileBanner.tsx` — link target.
+- `src/components/marketing/TalentSideDoor.tsx` — link targets per pillar.
+- `src/pages/Landing.tsx` — shop-oriented CTAs to `intent=org`.
+- `src/pages/talent/TalentLanding.tsx`, `src/pages/talent/PublicTalentProfile.tsx` (claim CTA) — `intent=talent`.
+- `src/pages/operator/OperatorProfile.tsx` (or equivalent) — welcome banner when `?welcome=1`.
 
-  elsif _action = 'remove' then
-    if exists (
-      select 1 from organization_members
-       where organization_id=_org_id and user_id=_user_id and role='owner'
-    ) and _owner_count <= 1 then
-      raise exception 'Cannot remove the only owner';
-    end if;
-    delete from organization_members
-     where organization_id=_org_id and user_id=_user_id;
+**Files created**
+- None.
 
-  elsif _action = 'transfer_owner' then
-    update organization_members set role='supervisor'
-     where organization_id=_org_id and role='owner';
-    insert into organization_members (organization_id, user_id, role, joined_at)
-    values (_org_id, _user_id, 'owner', now())
-    on conflict (organization_id,user_id) do update set role='owner';
-  else
-    raise exception 'Unknown action %', _action;
-  end if;
+**SessionStorage key**: `signup_intent` with values `"org" | "talent"`, cleared after first post-login redirect.
 
-  insert into concierge_activity_log(organization_id, actor_user_id, action, summary, details)
-  values (_org_id, _actor, 'concierge.member.'||_action,
-          format('Member %s: %s', _user_id, _action),
-          jsonb_build_object('user_id',_user_id,'new_role',_new_role));
-
-  return jsonb_build_object('ok', true);
-end $$;
-
-revoke all on function public.concierge_update_org_member(uuid,uuid,text,text) from public, anon;
-grant execute on function public.concierge_update_org_member(uuid,uuid,text,text) to authenticated;
-
--- 2. Station ↔ machine assignment helper
-create or replace function public.concierge_assign_machine_to_station(
-  _station_id uuid, _equipment_id uuid, _attach boolean
-) returns jsonb
-security definer set search_path = public
-language plpgsql as $$
-declare _actor uuid := auth.uid(); _org uuid;
-begin
-  if not has_role(_actor,'admin'::app_role) then
-    raise exception 'Not authorized' using errcode='42501';
-  end if;
-  select organization_id into _org from stations where id=_station_id;
-  if _attach then
-    insert into station_machine_assignments (station_id, equipment_id)
-    values (_station_id, _equipment_id)
-    on conflict do nothing;
-  else
-    delete from station_machine_assignments
-     where station_id=_station_id and equipment_id=_equipment_id;
-  end if;
-  insert into concierge_activity_log(organization_id, actor_user_id, action, summary, details)
-  values (_org, _actor,
-          case when _attach then 'concierge.station.machine_attached' else 'concierge.station.machine_detached' end,
-          format('Station %s %s machine %s', _station_id, case when _attach then 'attached' else 'detached' end, _equipment_id),
-          jsonb_build_object('station_id',_station_id,'equipment_id',_equipment_id));
-  return jsonb_build_object('ok', true);
-end $$;
-
-revoke all on function public.concierge_assign_machine_to_station(uuid,uuid,boolean) from public, anon;
-grant execute on function public.concierge_assign_machine_to_station(uuid,uuid,boolean) to authenticated;
-```
-
-No new tables. No RLS changes (existing org-scoped policies + admin override cover everything).
-
-## Files touched
-
-- `src/lib/concierge/intakeModuleSchema.ts` — add `departments`, `teams`; extend `stations` with select_from fields; extend `FieldDef`/`FieldType`.
-- `src/components/admin/onboarding/IntakeRecordDialog.tsx` — support `select_from` (fetches options per source table, scoped by org).
-- `src/components/admin/onboarding/EngagementDetail.tsx` — add "Shop structure" tab block above per-module tabs.
-- `src/components/admin/onboarding/StationMachineMatrix.tsx` *(new)*.
-- `src/components/admin/onboarding/OrgMembersPanel.tsx` *(new)*.
-- `src/hooks/useOrgStructure.ts` *(new)*.
-- `src/hooks/useOrgMembers.ts` *(new)*.
-- `src/hooks/useStationMachineMatrix.ts` *(new)*.
-- `src/hooks/useConciergeRefresh.ts` — add new cache keys.
-- New migration: `concierge_update_org_member`, `concierge_assign_machine_to_station`.
-
-## Out of scope (deferred to Phase 2/3)
-
-- Routing template steps editor
-- Org profile inline editor (`organizations` row patch)
-- `organization_setup_steps` panel
-- Shift schedules / work-center config
-- Org branding editor
-
-Each can be added without reworking Phase 1.
+**Allowlist update**: `REDIRECT_ALLOWLIST` in Auth.tsx already permits `/operator` and `/setup`, so no regex change needed.
