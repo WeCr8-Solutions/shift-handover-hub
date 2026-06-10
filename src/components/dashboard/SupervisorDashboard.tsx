@@ -27,6 +27,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 const ProductionAnalytics = lazy(() => import("./ProductionAnalytics").then(m => ({ default: m.ProductionAnalytics })));
+import { PackageKPICard } from "./PackageKPICard";
 import {
   STATUS_CONFIG,
   JOB_STATES,
@@ -463,6 +464,9 @@ export function SupervisorDashboard({
           </div>
         </div>
       </div>
+
+      {/* Package Shipments KPI (assemblies / multi-WO bundles) */}
+      <PackageKPICard />
 
       {/* Production Analytics — lazy loaded */}
       <Suspense fallback={<div className="bg-card border border-border rounded-lg p-8 text-center text-muted-foreground text-sm">Loading analytics…</div>}>
