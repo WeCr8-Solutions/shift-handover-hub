@@ -16,6 +16,7 @@ import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
 import { VisitorSurveyModal } from "@/components/marketing/VisitorSurveyModal";
 import { RotatingHeroBadge } from "@/components/marketing/RotatingHeroBadge";
 import { FreeTalentProfileBanner } from "@/components/marketing/FreeTalentProfileBanner";
+import { TalentSideDoor } from "@/components/marketing/TalentSideDoor";
 import { LandingNextStepsBand } from "@/components/marketing/LandingNextStepsBand";
 
 import { trackEvent, ConversionEvents } from "@/lib/analytics";
@@ -1043,7 +1044,9 @@ export default function Landing() {
       {/* CTA Section */}
       <section className="py-12 sm:py-16 md:py-24 lg:py-32">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <TalentSideDoor className="!my-0 !mb-10 sm:!mb-14" />
           <FreeTalentProfileBanner className="!my-0 !mb-10 sm:!mb-14 max-w-4xl mx-auto" />
+
           <div className="relative max-w-4xl mx-auto text-center">
             {/* Background */}
             <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-blue-500/10 to-primary/10 rounded-2xl sm:rounded-3xl blur-2xl sm:blur-3xl" />
