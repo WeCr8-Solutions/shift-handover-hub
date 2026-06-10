@@ -6,9 +6,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { INTAKE_MODULE_CONFIGS } from "@/lib/concierge/intakeModuleSchema";
-import type { IntakeWorksheetKey } from "@/lib/concierge/intakeColumns";
 
-export function useIntakeModule(module: IntakeWorksheetKey, orgId: string | null | undefined) {
+export function useIntakeModule(module: string, orgId: string | null | undefined) {
   const qc = useQueryClient();
   const config = INTAKE_MODULE_CONFIGS[module];
   const enabled = !!orgId && !!config;
@@ -28,12 +27,26 @@ export function useIntakeModule(module: IntakeWorksheetKey, orgId: string | null
     },
   });
 
-  const invalidate = () => qc.invalidateQueries({ queryKey: ["intake-module", module, orgId] });
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: ["intake-module", module, orgId] });
+    qc.invalidateQueries({ queryKey: ["concierge-select-options"] });
+    qc.invalidateQueries({ queryKey: ["org-structure", orgId] });
+  };
 
   const create = useMutation({
     mutationFn: async (values: Record<string, any>) => {
       if (!config || !orgId) throw new Error("Missing module config or organization");
-      const payload = { ...(config.defaults ?? {}), ...values, [config.orgColumn]: orgId };
+      const payload: Record<string, any> = {
+        ...(config.defaults ?? {}),
+        ...values,
+        [config.orgColumn]: orgId,
+      };
+      if (config.authDefaults) {
+        const { data: u } = await supabase.auth.getUser();
+        for (const [col, src] of Object.entries(config.authDefaults)) {
+          if (payload[col] == null && src === "user_id") payload[col] = u.user?.id ?? null;
+        }
+      }
       const { error } = await (supabase as any).from(config.table).insert(payload);
       if (error) throw error;
     },
