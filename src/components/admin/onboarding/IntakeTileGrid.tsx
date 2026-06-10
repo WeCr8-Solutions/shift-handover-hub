@@ -138,6 +138,7 @@ export function IntakeTileGrid({ module, orgId, title, description }: Props) {
         onOpenChange={setDialogOpen}
         config={config}
         record={editing}
+        orgId={orgId}
         onSubmit={handleSubmit}
         busy={create.isPending || update.isPending}
       />
