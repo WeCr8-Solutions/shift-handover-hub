@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Loader2, ArrowLeft, Crown, Users, Building2, Wrench, Plug, Gift, Trash2, Mail, Calendar, Shield, Eye } from "lucide-react";
 import { useActAs } from "@/contexts/ActAsContext";
 import { toast } from "sonner";
+import { OrgMembersPanel } from "@/components/admin/onboarding/OrgMembersPanel";
 
 interface OrgMember {
   user_id: string;
