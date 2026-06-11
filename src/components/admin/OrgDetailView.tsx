@@ -329,6 +329,28 @@ export function OrgDetailView({ org, onBack, isPlatformAdmin, onDelete, onGrant,
               )}
             </TabsContent>
 
+            <TabsContent value="members" className="mt-2 space-y-2">
+              {members.length > 0 && (
+                <div className="space-y-1.5">
+                  {members.map((m) => (
+                    <div key={m.user_id} className="flex items-center gap-2 p-2 rounded-lg border bg-card min-w-0">
+                      <Avatar className="w-7 h-7 shrink-0">
+                        <AvatarFallback className="text-[10px] bg-primary/10">
+                          {getInitials(m.display_name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-medium truncate">{m.display_name || "Unknown"}</p>
+                        <p className="text-[10px] text-muted-foreground truncate">{m.email || m.user_id}</p>
+                      </div>
+                      <div className="shrink-0">{getRoleBadge(m.role)}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <OrgMembersPanel organizationId={org.id} />
+            </TabsContent>
+
             <TabsContent value="teams" className="mt-2">
               {teams.length === 0 ? (
                 <p className="text-xs text-muted-foreground text-center py-6">No teams found</p>
