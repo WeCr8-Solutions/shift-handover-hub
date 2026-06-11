@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Loader2, ArrowLeft, Crown, Users, Building2, Wrench, Plug, Gift, Trash2, Mail, Calendar, Shield, Eye } from "lucide-react";
 import { useActAs } from "@/contexts/ActAsContext";
 import { toast } from "sonner";
+import { OrgMembersPanel } from "@/components/admin/onboarding/OrgMembersPanel";
 
 interface OrgMember {
   user_id: string;
@@ -86,9 +87,9 @@ export function OrgDetailView({ org, onBack, isPlatformAdmin, onDelete, onGrant,
       const [membersRes, teamsRes, stationsRes] = await Promise.all([
         supabase
           .from("organization_members")
-          .select("user_id, role, joined_at, profiles:user_id(display_name, email)")
+          .select("user_id, role, joined_at")
           .eq("organization_id", org.id)
-          .limit(100),
+          .limit(200),
         supabase
           .from("teams")
           .select("id, name, description, created_at")
@@ -102,11 +103,21 @@ export function OrgDetailView({ org, onBack, isPlatformAdmin, onDelete, onGrant,
       ]);
 
       if (membersRes.data) {
-        setMembers(membersRes.data.map((m: any) => ({
+        const rows = membersRes.data as Array<{ user_id: string; role: string; joined_at: string }>;
+        const userIds = Array.from(new Set(rows.map((r) => r.user_id)));
+        let profileMap = new Map<string, { display_name: string | null; email: string | null }>();
+        if (userIds.length > 0) {
+          const { data: profs } = await supabase
+            .from("profiles")
+            .select("user_id, display_name, email")
+            .in("user_id", userIds);
+          (profs ?? []).forEach((p: any) => profileMap.set(p.user_id, { display_name: p.display_name ?? null, email: p.email ?? null }));
+        }
+        setMembers(rows.map((m) => ({
           user_id: m.user_id,
           role: m.role,
-          display_name: m.profiles?.display_name || null,
-          email: m.profiles?.email || null,
+          display_name: profileMap.get(m.user_id)?.display_name ?? null,
+          email: profileMap.get(m.user_id)?.email ?? null,
           joined_at: m.joined_at,
         })));
       }
@@ -295,10 +306,9 @@ export function OrgDetailView({ org, onBack, isPlatformAdmin, onDelete, onGrant,
               )}
             </TabsContent>
 
-            <TabsContent value="members" className="mt-2">
-              {members.length === 0 ? (
-                <p className="text-xs text-muted-foreground text-center py-6">No members found</p>
-              ) : (
+
+            <TabsContent value="members" className="mt-2 space-y-2">
+              {members.length > 0 && (
                 <div className="space-y-1.5">
                   {members.map((m) => (
                     <div key={m.user_id} className="flex items-center gap-2 p-2 rounded-lg border bg-card min-w-0">
@@ -309,13 +319,14 @@ export function OrgDetailView({ org, onBack, isPlatformAdmin, onDelete, onGrant,
                       </Avatar>
                       <div className="min-w-0 flex-1">
                         <p className="text-xs font-medium truncate">{m.display_name || "Unknown"}</p>
-                        <p className="text-[10px] text-muted-foreground truncate">{m.email}</p>
+                        <p className="text-[10px] text-muted-foreground truncate">{m.email || m.user_id}</p>
                       </div>
                       <div className="shrink-0">{getRoleBadge(m.role)}</div>
                     </div>
                   ))}
                 </div>
               )}
+              <OrgMembersPanel organizationId={org.id} />
             </TabsContent>
 
             <TabsContent value="teams" className="mt-2">
