@@ -10252,6 +10252,7 @@ export type Database = {
           app_role: string | null
           created_at: string
           created_by: string
+          default_station_id: string | null
           expires_at: string | null
           id: string
           invite_code: string
@@ -10269,6 +10270,7 @@ export type Database = {
           app_role?: string | null
           created_at?: string
           created_by: string
+          default_station_id?: string | null
           expires_at?: string | null
           id?: string
           invite_code: string
@@ -10286,6 +10288,7 @@ export type Database = {
           app_role?: string | null
           created_at?: string
           created_by?: string
+          default_station_id?: string | null
           expires_at?: string | null
           id?: string
           invite_code?: string
@@ -10300,6 +10303,13 @@ export type Database = {
           uses_count?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "organization_invites_default_station_id_fkey"
+            columns: ["default_station_id"]
+            isOneToOne: false
+            referencedRelation: "stations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "organization_invites_organization_id_fkey"
             columns: ["organization_id"]
@@ -16665,6 +16675,16 @@ export type Database = {
       }
       concierge_delete_template_step: {
         Args: { _step_id: string }
+        Returns: Json
+      }
+      concierge_finalize_membership: {
+        Args: {
+          _app_role?: string
+          _default_station_id?: string
+          _org_id: string
+          _team_id?: string
+          _user_id: string
+        }
         Returns: Json
       }
       concierge_lookup_user_by_email: {
