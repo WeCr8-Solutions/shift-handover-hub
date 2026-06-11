@@ -87,9 +87,9 @@ export function OrgDetailView({ org, onBack, isPlatformAdmin, onDelete, onGrant,
       const [membersRes, teamsRes, stationsRes] = await Promise.all([
         supabase
           .from("organization_members")
-          .select("user_id, role, joined_at, profiles:user_id(display_name, email)")
+          .select("user_id, role, joined_at")
           .eq("organization_id", org.id)
-          .limit(100),
+          .limit(200),
         supabase
           .from("teams")
           .select("id, name, description, created_at")
@@ -103,11 +103,21 @@ export function OrgDetailView({ org, onBack, isPlatformAdmin, onDelete, onGrant,
       ]);
 
       if (membersRes.data) {
-        setMembers(membersRes.data.map((m: any) => ({
+        const rows = membersRes.data as Array<{ user_id: string; role: string; joined_at: string }>;
+        const userIds = Array.from(new Set(rows.map((r) => r.user_id)));
+        let profileMap = new Map<string, { display_name: string | null; email: string | null }>();
+        if (userIds.length > 0) {
+          const { data: profs } = await supabase
+            .from("profiles")
+            .select("user_id, display_name, email")
+            .in("user_id", userIds);
+          (profs ?? []).forEach((p: any) => profileMap.set(p.user_id, { display_name: p.display_name ?? null, email: p.email ?? null }));
+        }
+        setMembers(rows.map((m) => ({
           user_id: m.user_id,
           role: m.role,
-          display_name: m.profiles?.display_name || null,
-          email: m.profiles?.email || null,
+          display_name: profileMap.get(m.user_id)?.display_name ?? null,
+          email: profileMap.get(m.user_id)?.email ?? null,
           joined_at: m.joined_at,
         })));
       }
