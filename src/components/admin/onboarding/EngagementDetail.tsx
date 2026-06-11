@@ -25,6 +25,8 @@ import { AccountingExportPanel } from "./AccountingExportPanel";
 import { ConciergeAuditTimeline } from "./ConciergeAuditTimeline";
 import { OwnerInvitePanel } from "./OwnerInvitePanel";
 import { InvitesRolesBoard } from "./InvitesRolesBoard";
+import { InvitePreStagePanel } from "./InvitePreStagePanel";
+import { AddExistingUserPanel } from "./AddExistingUserPanel";
 import { IntakeMembersEditor } from "./IntakeMembersEditor";
 import { IntakeErpEditor } from "./IntakeErpEditor";
 import { DocumentLibrary } from "@/components/admin/concierge/DocumentLibrary";
@@ -190,6 +192,13 @@ export function EngagementDetail({ engagementId, onBack }: { engagementId: strin
         engagementId={engagement.id}
         organizationId={engagement.organization_id}
         organizationName={engagement.organizations?.name ?? undefined}
+      />
+
+      <InvitePreStagePanel organizationId={engagement.organization_id} />
+
+      <AddExistingUserPanel
+        engagementId={engagement.id}
+        organizationId={engagement.organization_id}
       />
 
       <DocumentLibrary audience="all" engagement={engagement} />
