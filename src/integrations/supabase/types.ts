@@ -16679,13 +16679,13 @@ export type Database = {
       }
       concierge_finalize_membership: {
         Args: {
-          _app_role?: string
-          _default_station_id?: string
+          _app_role: string
+          _default_station_id: string
           _org_id: string
-          _team_id?: string
+          _team_id: string
           _user_id: string
         }
-        Returns: Json
+        Returns: undefined
       }
       concierge_lookup_user_by_email: {
         Args: { _email: string; _organization_id?: string }
