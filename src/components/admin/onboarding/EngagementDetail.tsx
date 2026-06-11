@@ -194,6 +194,13 @@ export function EngagementDetail({ engagementId, onBack }: { engagementId: strin
         organizationName={engagement.organizations?.name ?? undefined}
       />
 
+      <InvitePreStagePanel organizationId={engagement.organization_id} />
+
+      <AddExistingUserPanel
+        engagementId={engagement.id}
+        organizationId={engagement.organization_id}
+      />
+
       <DocumentLibrary audience="all" engagement={engagement} />
 
       <OapMentorPolicyCard orgId={engagement.organization_id} canEdit />
