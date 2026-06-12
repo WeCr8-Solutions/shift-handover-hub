@@ -944,6 +944,16 @@ ON CONFLICT (user_id, role) DO NOTHING;`}
         </DialogContent>
       </Dialog>
 
+      {/* ─── Zone Stops Dialog (business tiles + CRUD) ─── */}
+      <ZoneStopsDialog
+        open={stopsDialogOpen}
+        onOpenChange={setStopsDialogOpen}
+        zone={stopsZone}
+        zoneDbId={stopsZoneDbId}
+        campaignId={campaignId}
+      />
+
+
       {/* ─── Log Drop Dialog ─── */}
       <Dialog open={dropDialogOpen} onOpenChange={setDropDialogOpen}>
         <DialogContent className="max-w-sm">
