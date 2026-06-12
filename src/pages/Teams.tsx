@@ -6,6 +6,7 @@ import { Header } from "@/components/Header";
 import { TeamManagement } from "@/components/TeamManagement";
 import { OrganizationMemberManager } from "@/components/OrganizationMemberManager";
 import { InviteCodeGenerator } from "@/components/InviteCodeGenerator";
+import { InviteTeamMemberDialog } from "@/components/InviteTeamMemberDialog";
 import { SkillsGapMatrix } from "@/components/teams/SkillsGapMatrix";
 import { TourTriggerButton } from "@/components/onboarding";
 import { Skeleton } from "@/components/ui/skeleton";
