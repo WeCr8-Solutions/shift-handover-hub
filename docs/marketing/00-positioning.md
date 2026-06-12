@@ -1,5 +1,8 @@
 # 00 — Positioning
 
+> **Thesis.** We are creating the "Digital Expeditor" category for US precision machine shops (10–100 employees, regulated end-markets) and a credentialed talent layer on the supply side. We coexist with ERPs, we compete with whiteboards, and we never lead with "AI." Every public surface must ladder to one of three pillars: *handoff that doesn't get lost*, *credentials that travel*, *works with your ERP*. Read alongside 01 (voice) and 10 (the breakout artifact that makes this category legible to the world).
+
+
 ## The category we're creating
 
 **Digital Expeditor for precision machine shops.**

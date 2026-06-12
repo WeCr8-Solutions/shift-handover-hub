@@ -20,13 +20,14 @@ Pairs with `docs/investors/` so fundraising narrative and GTM narrative stay in 
 | 07 | [Product-Led Growth](./07-product-led-growth.md) | Free tools → trial → paid; credential loops |
 | 08 | [Metrics & North Star](./08-metrics-and-north-star.md) | What we optimize for and what we ignore |
 | 09 | [Roadmap & Sequencing](./09-roadmap-and-sequencing.md) | 90 / 180 / 365-day priorities and kill criteria |
+| 10 | [Purple Cow — The Breakout Play](./10-purple-cow.md) | **Start here for the breakout campaign.** "The Machinist" flagship + two secondary bets |
 
 ## How to use this library
 
-- **Quarterly review**: re-read 00, 08, 09 every quarter. Update if positioning, KPIs, or priorities shifted.
+- **Quarterly review**: re-read 00, 08, 09, 10 every quarter. Update if positioning, KPIs, priorities, or the breakout play shifted.
 - **Before launching a channel**: read the relevant doc (02/03/04/05/06/07) and confirm the play fits the stated posture. If it doesn't, either change the play or update the strategy — don't run both in contradiction.
 - **Before a fundraise update**: reconcile positioning language with `docs/investors/one-pager.md`. The two should never disagree.
-- **When in doubt**: ship work that compounds (content, credentials, partnerships) over work that doesn't (paid ads at this stage).
+- **When in doubt**: ship work that compounds (content, credentials, partnerships, the flagship in doc 10) over work that doesn't (paid ads at this stage).
 
 ## What this library is NOT
 

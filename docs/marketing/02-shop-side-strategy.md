@@ -1,5 +1,8 @@
 # 02 — Shop-Side Strategy (Demand)
 
+> **Thesis.** Shops buy from peers, vendors they already pay, and operators they respect — in that order. Founder-led conversations and partner-led intros (doc 05) outperform every other channel by 10x at this stage. Paid acquisition is at the bottom of the priority stack on purpose. **12-month success looks like**: 20+ paid shops, ≥ 30% sourced via referral or partner intro, ≥ 90% logo retention at month 6.
+
+
 ## Goal
 
 Earn the trust of small-to-mid US precision shops fast enough that the second customer comes from the first customer's referral, not from our outbound.

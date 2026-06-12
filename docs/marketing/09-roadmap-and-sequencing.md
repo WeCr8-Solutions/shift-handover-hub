@@ -1,5 +1,8 @@
 # 09 — Roadmap & Sequencing
 
+> **Thesis.** Start compounding plays now (content, credentials, partnerships, founder visibility) even at small budget — they pay off in 6–18 months. Never run more than 3 channels in parallel. Every channel has a written kill rule before it starts. The flagship campaign in doc 10 is sequenced into 180–365-day window once activation and supply density are proven.
+
+
 ## Goal
 
 Put the strategy on a timeline so it's a plan, not a wish list. Sequencing matters as much as choice of tactic; doing the right things in the wrong order wastes a year.

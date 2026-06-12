@@ -1,5 +1,8 @@
 # 05 — Partnerships & Ecosystem
 
+> **Thesis.** Borrow trust we haven't earned by aligning with organizations the trade already trusts: tool & metrology vendors, ERP resellers, trade associations, workforce/education programs. Five real partnerships across five tiers beats fifty handshakes. **12-month success looks like**: two formalized partnerships with joint case studies, one trade-school district live on OAP, NTMA or PMA chapter speaking slot booked.
+
+
 ## Goal
 
 Borrow trust we haven't yet earned by aligning with organizations the trade already trusts. Partnerships are how an unknown brand reaches a skeptical audience without paying a per-click tax.
