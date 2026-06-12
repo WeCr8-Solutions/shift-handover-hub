@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useUrlState } from "@/hooks/useUrlState";
 import { QRCodeSVG } from "qrcode.react";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,6 +7,8 @@ import { trackEvent } from "@/lib/analytics";
 import { FlyerCampaigns } from "./FlyerCampaigns";
 import { BrandSystemPanel } from "./brand-system/BrandSystemPanel";
 import { openSocialLink } from "@/lib/talent/socialDeepLinks";
+const MarketingStrategyLibrary = lazy(() => import("./promotions/MarketingStrategyLibrary").then(m => ({ default: m.MarketingStrategyLibrary })));
+const PromotionsAudit = lazy(() => import("./promotions/PromotionsAudit").then(m => ({ default: m.PromotionsAudit })));
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
