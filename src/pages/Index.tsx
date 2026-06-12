@@ -315,6 +315,7 @@ const Index = () => {
         {user ? (
           <ExpiredTrialGate>
             <BillingBanner />
+            <DashboardErrorBoundary sectionLabel="Dashboard">
             {/* Show skeleton while roles/org data are still loading */}
             {isRoleResolving ? (
               <div className="py-12 space-y-6">
@@ -359,6 +360,7 @@ const Index = () => {
             ) : (
               <OperatorDashboard />
             )}
+            </DashboardErrorBoundary>
           </ExpiredTrialGate>
         ) : (
           <>
