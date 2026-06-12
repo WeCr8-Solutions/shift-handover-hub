@@ -1000,6 +1000,18 @@ export function PromotionsHub({ organizationId = null }: { organizationId?: stri
           <FlyerCampaigns />
         </TabsContent>
 
+        <TabsContent value="audit">
+          <Suspense fallback={<div className="py-10 text-center text-sm text-muted-foreground">Loading audit…</div>}>
+            <PromotionsAudit campaigns={promoCampaigns} socialProfiles={socialProfiles} onEdit={editPromo} />
+          </Suspense>
+        </TabsContent>
+
+        <TabsContent value="strategy">
+          <Suspense fallback={<div className="py-10 text-center text-sm text-muted-foreground">Loading strategy library…</div>}>
+            <MarketingStrategyLibrary />
+          </Suspense>
+        </TabsContent>
+
         <TabsContent value="brand-system">
           <BrandSystemPanel />
         </TabsContent>
