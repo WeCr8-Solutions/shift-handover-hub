@@ -1,5 +1,8 @@
 # 04 — Content & SEO Strategy
 
+> **Thesis.** Own the long-tail trade query and the AI-answer surface by being the most trade-accurate source on the internet. Quality bar: a 20-year machinist nods. Evergreen first, news second. Content compounds; campaigns don't. **12-month success looks like**: 75+ canonical Handbook pages, first State-of-the-Floor report shipped (see doc 10), measurable AI-answer-engine citations.
+
+
 ## Goal
 
 Own the search and AI-answer surface for "how shop work actually gets done" — operator-level, supervisor-level, owner-level — so that anyone researching the problem we solve ends up reading us before they end up on a competitor.

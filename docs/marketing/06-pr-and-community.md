@@ -1,5 +1,8 @@
 # 06 — PR & Community
 
+> **Thesis.** Vertical trade press first, mainstream press second. Show up at conferences small with intent, not big with a booth. Join the communities the trade already has; don't build a competing one until we have an annual artifact (see doc 10) worth gathering around. Founder visibility carries this function until at least Series A. **12-month success looks like**: 3+ trade-press features, one mainstream-press feature, one founder-hosted dinner at a major show.
+
+
 ## Goal
 
 Be the brand the trade press, conference organizers, and shop-floor communities already think of when "shift handoff," "operator credentials," or "digital expeditor" comes up.

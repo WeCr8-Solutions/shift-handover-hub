@@ -1,5 +1,8 @@
 # 08 — Metrics & North Star
 
+> **Thesis.** One north star — **Weekly Active Handoffs (WAH)**. One supply-side companion — **Credentialed Active Operators (CAO)**. Everything else is diagnostic. We optimize leading indicators (founder conversations, activation milestones, operator-pulled trials) and confirm with lagging ones (ARR, retention, press citations). If a number doesn't change our behavior, we don't need it.
+
+
 ## Goal
 
 Optimize for the smallest number of things that, if they grow, drag the rest of the business with them. Avoid the trap of dashboarding everything and prioritizing nothing.

@@ -1,5 +1,8 @@
 # 03 — Talent-Side Strategy (Supply)
 
+> **Thesis.** Supply is the moat. We win operators by giving them three things no platform has given them: a credential the trade can verify, a portfolio they own, and a privacy posture that respects them. The talent roster directly feeds the flagship in doc 10. **12-month success looks like**: 1,000+ credentialed active operators, first wave of operator-pulled shop conversions, one trade-school district live.
+
+
 ## Goal
 
 Build a credentialed, public roster of US machine-shop operators large enough that **(a)** shops can't ignore the hiring side and **(b)** operators routinely ask their employer to adopt JobLine.

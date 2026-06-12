@@ -1,5 +1,8 @@
 # 01 — Brand Strategy
 
+> **Thesis.** The brand has to land on two skeptical audiences at once — shop owners and operators — without talking down to either. Voice is shop-floor credible, plain-spoken, confident, and wry. Founder is the brand for two years. The brand-debt rules at the bottom of this doc override any short-term growth tactic that conflicts with them, including anything in 02–10.
+
+
 ## Brand promise
 
 **We make shop-floor work visible, portable, and respected** — without replacing the people who do it.

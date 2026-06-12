@@ -1,5 +1,8 @@
 # 07 — Product-Led Growth
 
+> **Thesis.** Free where it builds the moat (profiles, GCA, OAP, operator tools). Paid where there is real shop-side value. The single highest-leverage mechanic we have is **operator-pulled adoption** — operators inside non-customer shops bring the shop product to their employer. Optimize the product for that path before optimizing anything else. **12-month success looks like**: first-handoff-in-24-hours rate ≥ 70%, trial-to-paid ≥ 40%, measurable operator-pulled pipeline.
+
+
 ## Goal
 
 Get the product itself doing the work of acquisition. Every operator we credential, every tool we ship for free, every public talent profile is a top-of-funnel asset that costs us almost nothing per incremental user.
