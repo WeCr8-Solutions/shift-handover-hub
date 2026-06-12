@@ -59,6 +59,8 @@ import { ContactsExportTab } from "./ContactsExportTab";
 import { PrintMaterials } from "./PrintMaterials";
 import { CampaignMarketingGallery } from "./CampaignMarketingGallery";
 import { BusinessCardStudio } from "./BusinessCardStudio";
+import { ZoneStopsDialog } from "./ZoneStopsDialog";
+
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -220,6 +222,18 @@ export function FlyerCampaigns() {
   // QR detail dialog
   const [qrDialogOpen, setQrDialogOpen] = useState(false);
   const [qrZone, setQrZone] = useState<FlyerZone | null>(null);
+
+  // Zone stops dialog (business tiles + CRUD on flyer_stop_visits)
+  const [stopsDialogOpen, setStopsDialogOpen] = useState(false);
+  const [stopsZone, setStopsZone] = useState<FlyerZone | null>(null);
+  const [stopsZoneDbId, setStopsZoneDbId] = useState<string | null>(null);
+
+  function openStopsDialog(fz: FlyerZone, db?: DbZone) {
+    setStopsZone(fz);
+    setStopsZoneDbId(db?.id ?? null);
+    setStopsDialogOpen(true);
+  }
+
 
   // CSV export flag for download
   const [exportExpanded, setExportExpanded] = useState(false);
@@ -527,9 +541,13 @@ export function FlyerCampaigns() {
                   </TableHeader>
                   <TableBody>
                     {merged.map(({ fz, db }) => (
-                      <TableRow key={fz.zoneNumber}>
+                      <TableRow
+                        key={fz.zoneNumber}
+                        className="cursor-pointer hover:bg-muted/40"
+                        onClick={() => openStopsDialog(fz, db)}
+                      >
                         <TableCell className="font-mono text-xs text-muted-foreground">{String(fz.zoneNumber).padStart(2, "0")}</TableCell>
-                        <TableCell className="font-medium text-sm">{fz.zoneName}</TableCell>
+                        <TableCell className="font-medium text-sm text-primary hover:underline">{fz.zoneName}</TableCell>
                         <TableCell className="hidden md:table-cell text-sm text-muted-foreground">{fz.city}</TableCell>
                         <TableCell>
                           <ZoneStatusBadge status={db?.status ?? "pending"} />
@@ -546,13 +564,14 @@ export function FlyerCampaigns() {
                             size="icon"
                             variant="ghost"
                             className="h-7 w-7"
-                            onClick={() => { setQrZone(fz); setQrDialogOpen(true); }}
+                            onClick={(e) => { e.stopPropagation(); setQrZone(fz); setQrDialogOpen(true); }}
                           >
                             <QrCode className="w-3.5 h-3.5" />
                           </Button>
                         </TableCell>
                       </TableRow>
                     ))}
+
                   </TableBody>
                 </Table>
               </div>
@@ -568,8 +587,8 @@ export function FlyerCampaigns() {
               return (
                 <Card
                   key={fz.zoneNumber}
-                  className="cursor-pointer hover:border-primary/50 transition-colors"
-                  onClick={() => { setQrZone(fz); setQrDialogOpen(true); }}
+                  className="cursor-pointer hover:border-primary/50 transition-colors relative"
+                  onClick={() => openStopsDialog(fz, db)}
                 >
                   <CardContent className="flex flex-col items-center gap-2 p-3">
                     <QRCodeSVG
@@ -585,12 +604,22 @@ export function FlyerCampaigns() {
                       <p className="text-[10px] text-muted-foreground font-mono mt-0.5">{`z${String(fz.zoneNumber).padStart(2, "0")}`}</p>
                     </div>
                     <ZoneStatusBadge status={db?.status ?? "pending"} />
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="absolute top-1 right-1 h-6 w-6"
+                      onClick={(e) => { e.stopPropagation(); setQrZone(fz); setQrDialogOpen(true); }}
+                      title="Preview QR"
+                    >
+                      <QrCode className="w-3 h-3" />
+                    </Button>
                   </CardContent>
                 </Card>
               );
             })}
           </div>
         </TabsContent>
+
 
         {/* ─── Drop Log ─── */}
         <TabsContent value="drop-log">
@@ -914,6 +943,16 @@ ON CONFLICT (user_id, role) DO NOTHING;`}
           )}
         </DialogContent>
       </Dialog>
+
+      {/* ─── Zone Stops Dialog (business tiles + CRUD) ─── */}
+      <ZoneStopsDialog
+        open={stopsDialogOpen}
+        onOpenChange={setStopsDialogOpen}
+        zone={stopsZone}
+        zoneDbId={stopsZoneDbId}
+        campaignId={campaignId}
+      />
+
 
       {/* ─── Log Drop Dialog ─── */}
       <Dialog open={dropDialogOpen} onOpenChange={setDropDialogOpen}>
