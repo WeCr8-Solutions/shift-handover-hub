@@ -40,6 +40,8 @@ import {
   Share2,
   Sparkles,
   Building2,
+  BookOpen,
+  ClipboardCheck,
 } from "lucide-react";
 
 type PromoCampaignType = "event" | "promo";
