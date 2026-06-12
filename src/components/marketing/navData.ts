@@ -21,6 +21,7 @@ import {
   Users,
   GitCompare,
   FileText,
+  Calculator,
   Cable,
   HelpCircle,
   Building2,
@@ -120,6 +121,7 @@ export const learnCategories: LearnCategory[] = [
       { label: "Industry Glossary", href: "/resources/glossary", icon: BookA, desc: "Key terms & definitions" },
       { label: "ERP Selection Guide", href: "/resources/erp-guide", icon: FileText, desc: "Choose the right ERP for your shop" },
       { label: "Tool Comparisons", href: "/resources/comparisons", icon: GitCompare, desc: "Side-by-side software reviews" },
+      { label: "Shop Calculators", href: "/tools", icon: Calculator, desc: "SFM, tolerance, trig, tap drill & 7 more machinist tools" },
     ],
   },
   {

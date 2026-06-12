@@ -5,7 +5,7 @@ import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
-import { BookOpen, Code, BookA, ArrowRight, GitCompare, GraduationCap, Briefcase, ShieldAlert, ClipboardCheck, TrendingUp, LayoutGrid, Kanban, Users, FileText, School, Ruler, Gauge, Library, Cpu } from "lucide-react";
+import { BookOpen, Code, BookA, ArrowRight, GitCompare, GraduationCap, Briefcase, ShieldAlert, ClipboardCheck, TrendingUp, LayoutGrid, Kanban, Users, FileText, School, Ruler, Gauge, Library, Cpu, Calculator } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 
 
@@ -44,6 +44,13 @@ const sections = [
     icon: Ruler,
     href: "/resources/measuring-tools",
     count: "13 categories · 60+ tools",
+  },
+  {
+    title: "Shop Calculators",
+    description: "11 free machinist calculators and references — speed & feed (SFM), tolerance stackup, right-triangle solver, unit converter, surface finish (Ra), material removal rate, cycle time, hardness conversion, tap drill chart, thread pitch, and a general math calculator with history.",
+    icon: Calculator,
+    href: "/tools",
+    count: "11 tools",
   },
   {
     title: "Tool Proficiency Tests",

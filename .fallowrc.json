@@ -33,9 +33,18 @@
     "src/test/**",
     // SAP ERP connector — intentionally dormant, future roadmap (do not delete)
     "src/connectors/sap/**",
-    // Public barrel index.ts files re-export stable module APIs; intentional
-    // even when no sibling currently imports the barrel itself.
-    "src/components/*/index.ts",
+    // Dormant public barrel index.ts files re-export stable module APIs;
+    // intentional even though nothing imports the barrel itself yet.
+    // NOTE: list dormant barrels individually — a wildcard here would also
+    // drop actively-imported barrels (help, onboarding, tools) from the
+    // graph and falsely orphan everything reached through them.
+    "src/components/alerts/index.ts",
+    "src/components/machine/index.ts",
+    "src/components/ncr/index.ts",
+    "src/components/operator/index.ts",
+    "src/components/routing/index.ts",
+    "src/components/settings/index.ts",
+    "src/components/station/index.ts",
     "src/connectors/jobline/index.ts",
     "src/components/dashboard/userStatus.ts"
   ],
