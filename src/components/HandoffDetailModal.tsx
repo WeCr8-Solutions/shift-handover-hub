@@ -227,6 +227,19 @@ export function HandoffDetailModal({ open, onOpenChange, record, onViewWorkOrder
           </div>
         )}
 
+        {record.machineReadiness && (
+          <>
+            <Separator />
+            <div>
+              <div className="flex items-center gap-2 text-sm font-semibold mb-3">
+                <Wrench className="w-4 h-4 text-primary" />
+                Machine Readiness
+              </div>
+              <ReadinessChecklist readiness={record.machineReadiness} />
+            </div>
+          </>
+        )}
+
         <Separator />
 
         {/* Routing Steps */}
