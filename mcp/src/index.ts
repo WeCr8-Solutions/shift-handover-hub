@@ -5,13 +5,13 @@
  * Exposes the shift-handover-hub Supabase backend to AI agents
  * via the Anthropic Model Context Protocol (MCP).
  *
- * Tables queried (same Supabase instance as frontend):
- *   equipment              → machines / CNC / stations equipment
- *   stations               → work centers
- *   work_orders            → jobs / queue
- *   shift_handoff_records  → shift handover data
- *   activity_log           → searchable operator knowledge
- *   profiles               → operators
+ * Tables (verified against src/integrations/supabase/types.ts):
+ *   equipment       → machines / CNC / stations equipment
+ *   stations        → work centers
+ *   queue_items     → jobs / work order queue  (was: work_orders)
+ *   handoff_records → shift handover data       (was: shift_handoff_records)
+ *   activity_logs   → system audit log          (was: activity_log)
+ *   profiles        → operators / users
  */
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -26,7 +26,7 @@ dotenvConfig({ path: resolve(dirname(fileURLToPath(import.meta.url)), "../.env")
 
 const server = new McpServer({
   name: "wecr8mcp",
-  version: "0.1.0",
+  version: "0.2.0",
 });
 
 const supabase = createSupabaseClient();
@@ -37,7 +37,7 @@ const supabase = createSupabaseClient();
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 server.tool(
   "wecr8mcp_observe",
-  "Read current state of a physical entity: machine (equipment table), station (work center), work_order (job), or operator (profile). Returns data with confidence scoring based on freshness. Omit entity_id to list all.",
+  "Read current state of a physical entity: machine (equipment table), station (work center), work_order (queue_items), or operator (profile). Returns data with confidence scoring based on freshness. Omit entity_id to list all.",
   {
     entity_type: z.enum(["machine", "station", "work_order", "operator"]).describe("Entity type to observe"),
     entity_id: z.string().optional().describe("Specific entity UUID. Omit to list all of this type."),
@@ -69,19 +69,24 @@ server.tool(
           break;
         }
         case "work_order": {
-          let q = supabase.from("work_orders").select("*");
+          // Table: queue_items (Supabase schema)
+          let q = supabase.from("queue_items").select(
+            "id, part_number, description, status, priority, current_phase, station_id, due_date, " +
+            "qty_completed, parts_completed, operation_number, assigned_to, created_at, updated_at"
+          );
           if (entity_id) q = q.eq("id", entity_id);
           else q = q.order("created_at", { ascending: false }).limit(50);
           const r = await q;
           if (r.error) throw r.error;
           data = entity_id ? r.data?.[0] : r.data;
-          source = "work_orders";
+          source = "queue_items";
           break;
         }
         case "operator": {
-          let q = supabase.from("profiles").select("id, full_name, role, avatar_url, created_at, updated_at");
+          // Table: profiles — display_name is the name field (not full_name)
+          let q = supabase.from("profiles").select("id, display_name, email, avatar_url, created_at, updated_at");
           if (entity_id) q = q.eq("id", entity_id);
-          else q = q.order("full_name").limit(100);
+          else q = q.order("display_name").limit(100);
           const r = await q;
           if (r.error) throw r.error;
           data = entity_id ? r.data?.[0] : r.data;
@@ -121,16 +126,16 @@ server.tool(
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 server.tool(
   "hcl_get_shift_notes",
-  "Retrieve shift handover / handoff records. Contains operator observations, machine readiness, quality status, tooling notes, and issues. Filter by station, shift, or date.",
+  "Retrieve shift handover / handoff records from the handoff_records table. Contains operator observations, machine readiness, quality status, tooling notes, and issues. Filter by station, shift, or date.",
   {
     station_id: z.string().optional().describe("Filter by station UUID"),
-    shift: z.enum(["Day", "Swing", "Night"]).optional().describe("Filter by shift"),
+    shift: z.string().optional().describe("Filter by shift (e.g. Day, Swing, Night)"),
     limit: z.number().optional().default(20).describe("Max records (default 20)"),
   },
   async ({ station_id, shift, limit }) => {
     try {
       let q = supabase
-        .from("shift_handoff_records")
+        .from("handoff_records")
         .select("*")
         .order("created_at", { ascending: false })
         .limit(limit ?? 20);
@@ -155,30 +160,30 @@ server.tool(
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // TOOL: hcl_search_knowledge
-// Full-text search across activity log + handoffs
+// Full-text search across handoff records + activity logs
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 server.tool(
   "hcl_search_knowledge",
-  "Search across shift handoff records and activity logs. Use natural language to find operator knowledge, machine quirks, quality issues, or past incidents.",
+  "Search across shift handoff records and system activity logs. Use natural language to find operator knowledge, machine quirks, quality issues, or past incidents.",
   {
     query: z.string().describe("Search query (natural language)"),
     limit: z.number().optional().default(15).describe("Max results"),
   },
   async ({ query: q, limit }) => {
     try {
-      // Search activity_log via ilike
+      // Search activity_logs via description
       const activityResult = await supabase
-        .from("activity_log")
-        .select("*")
-        .or(`description.ilike.%${q}%,details.ilike.%${q}%`)
+        .from("activity_logs")
+        .select("id, activity_type, description, metadata, created_at")
+        .ilike("description", `%${q}%`)
         .order("created_at", { ascending: false })
         .limit(limit ?? 15);
 
-      // Also search handoff_records handoff_summary
+      // Search handoff_records via handoff_summary + process notes
       const handoffResult = await supabase
-        .from("shift_handoff_records")
-        .select("id, station_id, shift, work_order, work_center, handoff_summary, created_at")
-        .ilike("handoff_summary", `%${q}%`)
+        .from("handoff_records")
+        .select("id, station_id, shift, machine_id, part_number, operation_number, handoff_summary, quality_notes, created_at")
+        .or(`handoff_summary.ilike.%${q}%,process_notes_for_next_shift.ilike.%${q}%`)
         .order("created_at", { ascending: false })
         .limit(limit ?? 15);
 
@@ -187,7 +192,7 @@ server.tool(
           query: q,
           activity_log_hits: activityResult.data?.length ?? 0,
           handoff_hits: handoffResult.data?.length ?? 0,
-          activity_log: activityResult.data ?? [],
+          activity_logs: activityResult.data ?? [],
           handoff_matches: handoffResult.data ?? [],
         }, null, 2) }],
       };
@@ -199,11 +204,11 @@ server.tool(
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // TOOL: hcl_create_note
-// AI agents create activity log entries
+// Log an AI observation (requires SUPABASE_SERVICE_KEY)
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 server.tool(
   "hcl_create_note",
-  "Log an AI observation, prediction, or recommendation to the activity log. This becomes searchable operator knowledge.",
+  "Log an AI observation, prediction, or recommendation as a comment on a work order (queue item). Requires SUPABASE_SERVICE_KEY in mcp/.env for write access.",
   {
     description: z.string().describe("Note content (natural language)"),
     entity_type: z.enum(["equipment", "station", "work_order"]).optional().describe("Related entity type"),
@@ -211,31 +216,63 @@ server.tool(
     action_type: z.enum(["ai_insight", "ai_prediction", "ai_anomaly", "ai_recommendation", "note"]).optional().default("ai_insight"),
   },
   async ({ description, entity_type, entity_id, action_type }) => {
-    try {
-      const { data, error } = await supabase
-        .from("activity_log")
-        .insert({
-          action_type: action_type ?? "ai_insight",
-          description,
-          entity_type: entity_type ?? null,
-          entity_id: entity_id ?? null,
-          details: JSON.stringify({ source: "wecr8mcp", version: "0.1.0" }),
-        })
-        .select("id")
-        .single();
-
-      if (error) throw error;
-
-      return {
-        content: [{ type: "text" as const, text: JSON.stringify({
-          success: true,
-          note_id: data.id,
-          message: "Note logged to activity_log",
-        }, null, 2) }],
-      };
-    } catch (err: any) {
-      return { content: [{ type: "text" as const, text: `Error creating note: ${err.message}` }] };
+    const serviceKey = process.env.SUPABASE_SERVICE_KEY?.trim();
+    if (!serviceKey) {
+      return { content: [{ type: "text" as const, text: JSON.stringify({
+        success: false,
+        message: "hcl_create_note requires SUPABASE_SERVICE_KEY in mcp/.env. " +
+          "Get the service_role key from Supabase → Project Settings → API. " +
+          "Read operations (observe, search, get_machines, etc.) work with the anon key.",
+        entity_type,
+        entity_id,
+        note_content: description,
+      }, null, 2) }] };
     }
+
+    // With service key: write to queue_item_comments when entity is a work_order
+    if (entity_type === "work_order" && entity_id) {
+      try {
+        // Fetch the queue item to get organization_id
+        const { data: item, error: fetchErr } = await supabase
+          .from("queue_items")
+          .select("id, organization_id")
+          .eq("id", entity_id)
+          .single();
+        if (fetchErr) throw fetchErr;
+
+        const { data, error } = await supabase
+          .from("queue_item_comments")
+          .insert({
+            queue_item_id: entity_id,
+            organization_id: item.organization_id,
+            content: `[${(action_type ?? "ai_insight").toUpperCase()}] ${description}`,
+            user_id: "00000000-0000-0000-0000-000000000000", // system/AI user
+            user_name: "WeCr8 MCP (AI)",
+          })
+          .select("id")
+          .single();
+        if (error) throw error;
+        return { content: [{ type: "text" as const, text: JSON.stringify({
+          success: true,
+          comment_id: data.id,
+          entity_type,
+          entity_id,
+          message: "Note added to work order comments",
+        }, null, 2) }] };
+      } catch (err: any) {
+        return { content: [{ type: "text" as const, text: `Error creating note: ${err.message}` }] };
+      }
+    }
+
+    // For machine/station entities — notes stored as informational response
+    return { content: [{ type: "text" as const, text: JSON.stringify({
+      success: true,
+      note_content: description,
+      entity_type: entity_type ?? null,
+      entity_id: entity_id ?? null,
+      action_type,
+      message: "Note acknowledged. To persist machine/station notes, add a notes field or use a maintenance record.",
+    }, null, 2) }] };
   }
 );
 
@@ -277,21 +314,21 @@ server.tool(
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // TOOL: hcl_get_work_orders
-// List work orders / jobs
+// List queue items (work orders)
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 server.tool(
   "hcl_get_work_orders",
-  "List work orders (jobs). Returns order number, part info, status, station, priority, and scheduling data.",
+  "List work orders / queue items. Returns part number, description, status, station, priority, and scheduling data. Status values: pending, queued, in_progress, on_hold, completed, cancelled.",
   {
     station_id: z.string().optional().describe("Filter by station UUID"),
-    status: z.string().optional().describe("Filter by status (e.g. active, pending, complete)"),
+    status: z.enum(["pending", "queued", "in_progress", "on_hold", "completed", "cancelled"]).optional().describe("Filter by status"),
     limit: z.number().optional().default(30).describe("Max results"),
   },
   async ({ station_id, status, limit }) => {
     try {
       let q = supabase
-        .from("work_orders")
-        .select("*")
+        .from("queue_items")
+        .select("id, part_number, description, status, priority, current_phase, station_id, due_date, qty_completed, operation_number, assigned_to, created_at")
         .order("created_at", { ascending: false })
         .limit(limit ?? 30);
 
@@ -315,19 +352,23 @@ server.tool(
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // TOOL: hcl_get_handovers
-// Recent shift handovers with summaries
+// Recent shift handovers
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 server.tool(
   "hcl_get_handovers",
-  "Get recent shift handovers with summary, quality status, and issues. Use this to understand what happened on previous shifts.",
+  "Get recent shift handovers with summary, quality notes, and issues. Use this to understand what happened on previous shifts.",
   {
     limit: z.number().optional().default(5).describe("Number of recent handovers"),
   },
   async ({ limit }) => {
     try {
       const { data, error } = await supabase
-        .from("shift_handoff_records")
-        .select("id, shift, work_order, work_center, work_center_type, handoff_summary, quality_status, machine_condition, issues_follow_ups, created_at")
+        .from("handoff_records")
+        .select(
+          "id, shift, machine_id, part_number, operation_number, " +
+          "handoff_summary, quality_notes, machine_condition, issues_follow_ups, " +
+          "outgoing_operator_name, incoming_operator_name, created_at"
+        )
         .order("created_at", { ascending: false })
         .limit(limit ?? 5);
 
@@ -351,7 +392,7 @@ server.tool(
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 server.tool(
   "wecr8mcp_enrich",
-  "Attach an AI-generated insight, prediction, or anomaly flag to a physical entity. Stored in activity_log and becomes searchable knowledge.",
+  "Attach an AI-generated insight, prediction, or anomaly flag to a physical entity. For work_order entities, persists as a queue item comment. Other entity types return an informational response. Requires SUPABASE_SERVICE_KEY for persistence.",
   {
     entity_type: z.enum(["equipment", "station", "work_order"]).describe("Entity type"),
     entity_id: z.string().describe("Entity UUID"),
@@ -360,39 +401,60 @@ server.tool(
     confidence: z.number().min(0).max(1).optional().default(0.85).describe("Confidence 0.0-1.0"),
   },
   async ({ entity_type, entity_id, enrichment_type, content, confidence }) => {
-    try {
-      const { data, error } = await supabase
-        .from("activity_log")
-        .insert({
-          action_type: `ai_${enrichment_type}`,
-          description: `[${enrichment_type.toUpperCase()}] ${content}`,
-          entity_type,
-          entity_id,
-          details: JSON.stringify({
-            source: "wecr8mcp",
-            enrichment_type,
-            confidence,
-            version: "0.1.0",
-          }),
-        })
-        .select("id")
-        .single();
+    const serviceKey = process.env.SUPABASE_SERVICE_KEY?.trim();
+    const label = `[${enrichment_type.toUpperCase()} conf=${((confidence ?? 0.85) * 100).toFixed(0)}%] ${content}`;
 
-      if (error) throw error;
+    if (!serviceKey) {
+      return { content: [{ type: "text" as const, text: JSON.stringify({
+        success: false,
+        message: "wecr8mcp_enrich requires SUPABASE_SERVICE_KEY in mcp/.env for write access. " +
+          "Get the service_role key from Supabase → Project Settings → API.",
+        entity_type, entity_id, enrichment_type, confidence,
+        enrichment_content: content,
+      }, null, 2) }] };
+    }
 
-      return {
-        content: [{ type: "text" as const, text: JSON.stringify({
+    if (entity_type === "work_order") {
+      try {
+        const { data: item, error: fetchErr } = await supabase
+          .from("queue_items")
+          .select("id, organization_id")
+          .eq("id", entity_id)
+          .single();
+        if (fetchErr) throw fetchErr;
+
+        const { data, error } = await supabase
+          .from("queue_item_comments")
+          .insert({
+            queue_item_id: entity_id,
+            organization_id: item.organization_id,
+            content: label,
+            user_id: "00000000-0000-0000-0000-000000000000",
+            user_name: "WeCr8 MCP (AI)",
+          })
+          .select("id")
+          .single();
+        if (error) throw error;
+
+        return { content: [{ type: "text" as const, text: JSON.stringify({
           success: true,
           enrichment_id: data.id,
-          entity_type,
-          entity_id,
-          enrichment_type,
-          confidence,
-        }, null, 2) }],
-      };
-    } catch (err: any) {
-      return { content: [{ type: "text" as const, text: `Error: ${err.message}` }] };
+          entity_type, entity_id, enrichment_type, confidence,
+        }, null, 2) }] };
+      } catch (err: any) {
+        return { content: [{ type: "text" as const, text: `Error enriching entity: ${err.message}` }] };
+      }
     }
+
+    return { content: [{ type: "text" as const, text: JSON.stringify({
+      success: true,
+      enrichment_type,
+      entity_type,
+      entity_id,
+      confidence,
+      enrichment_content: content,
+      message: "Enrichment acknowledged. Machine/station persistence requires a maintenance_records integration.",
+    }, null, 2) }] };
   }
 );
 
@@ -402,7 +464,11 @@ server.tool(
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error("[wecr8mcp] Server running on stdio — 8 tools available");
+  const hasServiceKey = !!process.env.SUPABASE_SERVICE_KEY?.trim();
+  console.error(
+    `[wecr8mcp] v0.2.0 — 8 tools available — ` +
+    `reads: anon key — writes: ${hasServiceKey ? "service key ✓" : "service key missing (add to mcp/.env)"}`
+  );
 }
 
 main().catch((err) => {
