@@ -78,7 +78,7 @@ export default function Auth() {
   // Single unified form
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const initialMode = searchParams.get("mode") === "signup";
+  const initialMode = searchParams.get("mode") === "signup" || searchParams.get("signup") === "1";
   const [createMode, setCreateMode] = useState(initialMode);
   const [displayName, setDisplayName] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -145,9 +145,9 @@ export default function Auth() {
         setShowInviteRedemption(true);
         return;
       }
-      // F-8: Allowlist for ?redirect= param
-      const REDIRECT_ALLOWLIST = /^\/(dashboard|talent|oap|gcode-academy|gca|operator|settings|queue|teams|setup|verify|admin|employers)(\/.*)?$/;
-      const redirectTo = searchParams.get("redirect");
+      // F-8: Allowlist for ?redirect= param (?next= accepted as an alias)
+      const REDIRECT_ALLOWLIST = /^\/(dashboard|talent|oap|gcode-academy|gca|operator|settings|queue|teams|setup|verify|admin|employers|onboarding|onboarding-service)(\/.*)?$/;
+      const redirectTo = searchParams.get("redirect") ?? searchParams.get("next");
       if (redirectTo && REDIRECT_ALLOWLIST.test(redirectTo)) {
         navigate(redirectTo, { replace: true });
         return;

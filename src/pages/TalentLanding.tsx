@@ -82,8 +82,8 @@ export default function TalentLanding() {
   const [loading, setLoading] = useState(true);
 
   const profileCtaHref = user
-    ? "/profile/operator"
-    : "/auth?signup=1&redirect=/profile/operator";
+    ? "/operator/profile"
+    : "/auth?mode=signup&intent=talent&redirect=/operator/profile";
   const profileCtaLabel = user ? "Complete my talent profile" : "Build my profile (free)";
 
   useEffect(() => {

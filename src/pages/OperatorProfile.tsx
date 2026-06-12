@@ -134,7 +134,7 @@ export default function OperatorProfile() {
   }>(null);
 
   useEffect(() => {
-    if (isReady && !user) navigate("/auth");
+    if (isReady && !user) navigate("/auth?redirect=/operator/profile");
   }, [isReady, user, navigate]);
 
   useEffect(() => {

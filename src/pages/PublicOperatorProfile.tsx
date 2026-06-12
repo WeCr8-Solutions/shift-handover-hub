@@ -526,7 +526,7 @@ export default function PublicTalentProfile() {
                 </Button>
               )}
               <Button asChild size="sm" variant="outline">
-                <Link to="/auth?signup=1">Build your own profile</Link>
+                <Link to="/auth?mode=signup&intent=talent">Build your own profile</Link>
               </Button>
             </div>
           </CardContent>
@@ -851,7 +851,7 @@ export default function PublicTalentProfile() {
               Free, verified, and yours forever — across every shop you ever work for.
             </p>
             <Button asChild>
-              <Link to="/auth?signup=1">Create my profile</Link>
+              <Link to="/auth?mode=signup&intent=talent">Create my profile</Link>
             </Button>
           </CardContent>
         </Card>
