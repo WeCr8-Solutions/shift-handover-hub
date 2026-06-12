@@ -22,6 +22,8 @@ import { RoutingSection } from "./RoutingSection";
 import { CustomerCombobox } from "./CustomerCombobox";
 import type { Customer } from "@/hooks/useCustomers";
 import { cn } from "@/lib/utils";
+import { useLoadBalancer } from "@/hooks/useLoadBalancer";
+import { Sparkles as SparklesIcon } from "lucide-react";
 
 
 interface Station {
@@ -489,10 +491,16 @@ export function CreateWorkOrderDialog({
           {/* Station Selection — shown when no routing is defined (works for both quotes and WOs) */}
           {!hasRouting && (
             <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                <Wrench className="w-4 h-4" />
-                Assign to Station
-              </Label>
+              <div className="flex items-center justify-between gap-2">
+                <Label className="flex items-center gap-2">
+                  <Wrench className="w-4 h-4" />
+                  Assign to Station
+                </Label>
+                <RecommendStationButton
+                  partSpecs={partSpecs}
+                  onPick={(stationId) => updateFormField("station_id", stationId)}
+                />
+              </div>
               <Select
                 value={formData.station_id || "none"}
                 onValueChange={(value) => updateFormField("station_id", value === "none" ? "" : value)}
