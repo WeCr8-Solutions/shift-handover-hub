@@ -18,6 +18,9 @@ import { ScrollToTop } from "@/components/ScrollToTop";
 import { USPersonDeclarationGate } from "@/components/compliance/USPersonDeclarationGate";
 import { RulesOfBehaviorGate } from "@/components/compliance/RulesOfBehaviorGate";
 import { ReleaseBadge } from "@/components/ReleaseBadge";
+import { IssueReporterBoot } from "@/components/IssueReporterBoot";
+import { FreeTalentProfileRibbon } from "@/components/marketing/FreeTalentProfileRibbon";
+import { CookieConsent } from "@/components/legal/CookieConsent";
 import { RequireAuth, RequireOrg, RequireRole, RequireSubscription } from "@/components/auth/RouteGuards";
 import { OwnerSetupRedirect } from "@/components/onboarding/OwnerSetupRedirect";
 import { lazy, Suspense } from "react";
@@ -127,6 +130,15 @@ const GCALanding = lazy(() => import("./pages/GCALanding"));
 const HandbookLibrary = lazy(() => import("./pages/HandbookLibrary"));
 const HandbookEntry = lazy(() => import("./pages/HandbookEntry"));
 const ManualsLibrary = lazy(() => import("./pages/ManualsLibrary"));
+const ManualViewer = lazy(() => import("./pages/ManualViewer"));
+const ManualUpload = lazy(() => import("./pages/ManualUpload"));
+const MeasuringTools = lazy(() => import("./pages/resources/MeasuringTools"));
+const ToolProficiency = lazy(() => import("./pages/ToolProficiency"));
+const PublicBusinessCard = lazy(() => import("./pages/PublicBusinessCard"));
+const EmployersIndex = lazy(() => import("./pages/EmployersIndex"));
+const EmployerBrowse = lazy(() => import("./pages/EmployerBrowse"));
+const PublicEmployerProfile = lazy(() => import("./pages/PublicEmployerProfile"));
+const EmployerDashboard = lazy(() => import("./pages/EmployerDashboard"));
 const CertificateLookup = lazy(() => import("./pages/CertificateLookup"));
 const VerifyCertificate = lazy(() => import("./pages/VerifyCertificate"));
 const CertSuccess = lazy(() => import("./pages/CertSuccess"));
@@ -228,6 +240,9 @@ const App = () => (
                   <ReleaseBadge />
                   <GuidedTour />
                   <WelcomeModal />
+                  <IssueReporterBoot />
+                  <FreeTalentProfileRibbon />
+                  <CookieConsent />
                   <Suspense fallback={<RouteFallback />}>
                   <Routes>
                     <Route path="/" element={<Landing />} />
@@ -342,6 +357,8 @@ const App = () => (
                     <Route path="/handbook" element={<HandbookLibrary />} />
                     <Route path="/handbook/:slug" element={<HandbookEntry />} />
                     <Route path="/manuals" element={<ManualsLibrary />} />
+                    <Route path="/manuals/upload" element={<ManualUpload />} />
+                    <Route path="/manuals/:slug" element={<ManualViewer />} />
                     <Route path="/verify" element={<CertificateLookup />} />
                     <Route path="/verify/:certId" element={<VerifyCertificate />} />
                     <Route path="/cert/success" element={<CertSuccess />} />
@@ -368,6 +385,12 @@ const App = () => (
                     <Route path="/learn/tutorials/openclaw-install" element={<OpenClawInstallGuide />} />
                     <Route path="/learn/tutorials/hermes-install" element={<HermesInstallGuide />} />
                     <Route path="/learn/tutorials/nemoclaw-install" element={<NemoClawInstallGuide />} />
+                    <Route path="/oap/proficiency" element={<ToolProficiency />} />
+                    <Route path="/employers" element={<EmployersIndex />} />
+                    <Route path="/employers/browse" element={<EmployerBrowse />} />
+                    <Route path="/employers/dashboard" element={<EmployerDashboard />} />
+                    <Route path="/employers/:slug" element={<PublicEmployerProfile />} />
+                    <Route path="/card/:slug" element={<PublicBusinessCard />} />
                     <Route path="/talent" element={<TalentLanding />} />
                     <Route path="/talent/dashboard" element={<TalentDashboard />} />
                     <Route path="/talent/browse" element={<TalentBrowse />} />
@@ -377,6 +400,7 @@ const App = () => (
                     <Route path="/talent/:username" element={<PublicTalentProfile />} />
                     <Route path="/operator/profile" element={<OperatorProfile />} />
                     <Route path="/resources/oap" element={<OperatorAcceptanceProgram />} />
+                    <Route path="/resources/measuring-tools" element={<MeasuringTools />} />
                     <Route path="/resources/glossary" element={<IndustryGlossary />} />
                     <Route path="/resources/beginners" element={<BeginnersGuide />} />
                     <Route path="/resources/careers" element={<ManufacturingCareers />} />
