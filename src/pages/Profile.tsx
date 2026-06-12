@@ -412,6 +412,20 @@ export default function Profile() {
           );
         })()}
 
+        {/* Refer a shop — share promo code */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Refer a shop</CardTitle>
+            <CardDescription>
+              Share a promo code with a colleague's shop. They get a discount, you help the
+              community grow.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <SharePromoDialog />
+          </CardContent>
+        </Card>
+
         {/* Onboarding Progress Card */}
         <OnboardingProgress showRestart />
       </main>
