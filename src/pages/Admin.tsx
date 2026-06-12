@@ -400,6 +400,14 @@ export default function Admin() {
                       <BookOpen className="w-4 h-4" />
                       Updates
                     </TabsTrigger>
+                    <TabsTrigger value="changelog" className="gap-2">
+                      <History className="w-4 h-4" />
+                      Changelog
+                    </TabsTrigger>
+                    <TabsTrigger value="teams-oversight" className="gap-2">
+                      <Users className="w-4 h-4" />
+                      Teams Oversight
+                    </TabsTrigger>
                     <TabsTrigger value="surveys" className="gap-2">
                       <MessageSquare className="w-4 h-4" />
                       Surveys
