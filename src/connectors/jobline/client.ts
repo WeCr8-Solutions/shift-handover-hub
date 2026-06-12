@@ -275,10 +275,17 @@ export function isRelayConfigured(): boolean {
 async function fetchRelayToken(): Promise<RelayTokenResponse | null> {
   try {
     const { data, error } = await supabase.functions.invoke("relay-token");
-    if (error) throw error;
+    if (error) {
+      // Quiet log — Phase 1 (no relay configured) is the expected default.
+      console.info("[JobLineSubscriber] Relay token unavailable, using static data.");
+      return null;
+    }
+    if (!data || (data as { configured?: boolean }).configured === false) {
+      return null;
+    }
     return data as RelayTokenResponse;
-  } catch (err) {
-    console.error("[JobLineSubscriber] Token exchange failed:", err);
+  } catch {
     return null;
   }
 }
+
