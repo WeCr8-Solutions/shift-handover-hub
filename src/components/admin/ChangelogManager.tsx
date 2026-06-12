@@ -19,6 +19,8 @@ import {
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
+import { AdminEmptyState } from "@/components/admin/AdminEmptyState";
+import { useDraftPersistence } from "@/hooks/useDraftPersistence";
 
 interface ChangelogEntry {
   id: string;
@@ -50,11 +52,24 @@ function ChangelogForm({
   onSave: (data: Partial<ChangelogEntry>) => Promise<void>;
   onCancel: () => void;
 }) {
-  const [title, setTitle] = useState(entry?.title || "");
-  const [description, setDescription] = useState(entry?.description || "");
-  const [version, setVersion] = useState(entry?.version || "");
-  const [changeType, setChangeType] = useState(entry?.change_type || "improvement");
-  const [isPublished, setIsPublished] = useState(entry?.is_published || false);
+  // Drafts auto-persist while creating new entries (cleared on save). Edits skip drafts.
+  const draftKey = `changelog:${entry?.id ?? "new"}`;
+  const [draft, setDraft, { clear: clearDraft }] = useDraftPersistence(
+    draftKey,
+    {
+      title: entry?.title || "",
+      description: entry?.description || "",
+      version: entry?.version || "",
+      changeType: entry?.change_type || "improvement",
+      isPublished: entry?.is_published || false,
+    },
+  );
+  const { title, description, version, changeType, isPublished } = draft;
+  const setTitle = (v: string) => setDraft((p) => ({ ...p, title: v }));
+  const setDescription = (v: string) => setDraft((p) => ({ ...p, description: v }));
+  const setVersion = (v: string) => setDraft((p) => ({ ...p, version: v }));
+  const setChangeType = (v: string) => setDraft((p) => ({ ...p, changeType: v }));
+  const setIsPublished = (v: boolean) => setDraft((p) => ({ ...p, isPublished: v }));
   const [saving, setSaving] = useState(false);
 
   const handleSubmit = async () => {
@@ -68,6 +83,7 @@ function ChangelogForm({
       is_published: isPublished,
       published_at: isPublished && !entry?.is_published ? new Date().toISOString() : entry?.published_at,
     });
+    clearDraft();
     setSaving(false);
   };
 
@@ -203,10 +219,11 @@ export function ChangelogManager() {
             ))}
           </div>
         ) : entries.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <BookOpen className="w-12 h-12 mx-auto mb-2 opacity-50" />
-            <p>No changelog entries yet</p>
-          </div>
+          <AdminEmptyState
+            title="No changelog entries yet"
+            description="Publish your first release note to keep the org informed."
+            showPermissionHint={!isAdmin}
+          />
         ) : (
           <ScrollArea className="h-[500px] pr-4">
             <div className="space-y-3">
