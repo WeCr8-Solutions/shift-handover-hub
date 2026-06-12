@@ -541,9 +541,13 @@ export function FlyerCampaigns() {
                   </TableHeader>
                   <TableBody>
                     {merged.map(({ fz, db }) => (
-                      <TableRow key={fz.zoneNumber}>
+                      <TableRow
+                        key={fz.zoneNumber}
+                        className="cursor-pointer hover:bg-muted/40"
+                        onClick={() => openStopsDialog(fz, db)}
+                      >
                         <TableCell className="font-mono text-xs text-muted-foreground">{String(fz.zoneNumber).padStart(2, "0")}</TableCell>
-                        <TableCell className="font-medium text-sm">{fz.zoneName}</TableCell>
+                        <TableCell className="font-medium text-sm text-primary hover:underline">{fz.zoneName}</TableCell>
                         <TableCell className="hidden md:table-cell text-sm text-muted-foreground">{fz.city}</TableCell>
                         <TableCell>
                           <ZoneStatusBadge status={db?.status ?? "pending"} />
@@ -560,13 +564,14 @@ export function FlyerCampaigns() {
                             size="icon"
                             variant="ghost"
                             className="h-7 w-7"
-                            onClick={() => { setQrZone(fz); setQrDialogOpen(true); }}
+                            onClick={(e) => { e.stopPropagation(); setQrZone(fz); setQrDialogOpen(true); }}
                           >
                             <QrCode className="w-3.5 h-3.5" />
                           </Button>
                         </TableCell>
                       </TableRow>
                     ))}
+
                   </TableBody>
                 </Table>
               </div>
