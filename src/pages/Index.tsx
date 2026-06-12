@@ -23,6 +23,7 @@ import { SupervisorDashboard } from "@/components/dashboard/SupervisorDashboard"
 import { OperatorDashboard } from "@/components/dashboard/OperatorDashboard";
 import { StationDetailView } from "@/components/dashboard/StationDetailView";
 import { ExpiredTrialGate } from "@/components/ExpiredTrialGate";
+import { BillingBanner } from "@/components/BillingBanner";
 
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrentTeam } from "@/contexts/TeamContext";
