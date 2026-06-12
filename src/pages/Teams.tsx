@@ -78,7 +78,10 @@ export default function Teams() {
             <TeamManagement />
           </TabsContent>
 
-          <TabsContent value="org-members">
+          <TabsContent value="org-members" className="space-y-4">
+            <div className="flex justify-end">
+              <InviteTeamMemberDialog onInviteSent={() => setActiveTab("invites")} />
+            </div>
             <OrganizationMemberManager onNavigateToInvites={() => setActiveTab("invites")} />
           </TabsContent>
 
