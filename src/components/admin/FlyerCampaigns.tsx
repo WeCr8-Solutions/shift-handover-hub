@@ -59,6 +59,8 @@ import { ContactsExportTab } from "./ContactsExportTab";
 import { PrintMaterials } from "./PrintMaterials";
 import { CampaignMarketingGallery } from "./CampaignMarketingGallery";
 import { BusinessCardStudio } from "./BusinessCardStudio";
+import { ZoneStopsDialog } from "./ZoneStopsDialog";
+
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
