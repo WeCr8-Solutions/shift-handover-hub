@@ -12,7 +12,14 @@
   ],
   "dynamicallyLoaded": [
     // Blog posts loaded via import.meta.glob in Blog.tsx / BlogPost.tsx / BlogAdmin.tsx
-    "content/posts/*.mdx"
+    "content/posts/*.mdx",
+    // Legacy React Email templates retained as canonical visual reference for
+    // the shared transactional template registry (supabase/functions/_shared/
+    // transactional-email-templates/). Kept in source as design parity guide.
+    "supabase/functions/send-email/_templates/*.tsx",
+    // Global stylesheets loaded via top-level CSS imports (not statically traceable)
+    "src/App.css",
+    "src/styles/**/*.css"
   ],
   "ignorePatterns": [
     // Static assets served verbatim (script tags in public HTML)
@@ -25,7 +32,12 @@
     // Test infrastructure (mocks/utils consumed ad hoc by future tests)
     "src/test/**",
     // SAP ERP connector — intentionally dormant, future roadmap (do not delete)
-    "src/connectors/sap/**"
+    "src/connectors/sap/**",
+    // Public barrel index.ts files re-export stable module APIs; intentional
+    // even when no sibling currently imports the barrel itself.
+    "src/components/*/index.ts",
+    "src/connectors/jobline/index.ts",
+    "src/components/dashboard/userStatus.ts"
   ],
   "health": {
     "ignore": ["dist/**"]
