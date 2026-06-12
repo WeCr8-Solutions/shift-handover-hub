@@ -13,6 +13,7 @@ import {
   ArrowRight, Loader2, Route, Wrench, AlertTriangle, ExternalLink,
 } from "lucide-react";
 import type { ShiftHandoffRecord } from "@/types/handoff";
+import { ReadinessChecklist } from "@/components/ReadinessChecklist";
 
 interface RoutingStep {
   id: string;
@@ -224,6 +225,19 @@ export function HandoffDetailModal({ open, onOpenChange, record, onViewWorkOrder
               </div>
             ))}
           </div>
+        )}
+
+        {record.machineReadiness && (
+          <>
+            <Separator />
+            <div>
+              <div className="flex items-center gap-2 text-sm font-semibold mb-3">
+                <Wrench className="w-4 h-4 text-primary" />
+                Machine Readiness
+              </div>
+              <ReadinessChecklist readiness={record.machineReadiness} />
+            </div>
+          </>
         )}
 
         <Separator />

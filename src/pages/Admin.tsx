@@ -57,6 +57,8 @@ const TalentGovernance = lazy(() => import("@/components/admin/TalentGovernance"
 const ExecutiveOverview = lazy(() => import("@/components/admin/ExecutiveOverview").then(m => ({ default: m.ExecutiveOverview })));
 const SeoDiagnosticsPanel = lazy(() => import("@/components/admin/seo-diagnostics/SeoDiagnosticsPanel").then(m => ({ default: m.SeoDiagnosticsPanel })));
 const OnboardingServicesPanel = lazy(() => import("@/components/admin/onboarding/OnboardingServicesPanel").then(m => ({ default: m.OnboardingServicesPanel })));
+const TeamOversight = lazy(() => import("@/components/admin/TeamOversight").then(m => ({ default: m.TeamOversight })));
+const ChangelogManager = lazy(() => import("@/components/admin/ChangelogManager").then(m => ({ default: m.ChangelogManager })));
 
 const AdminTabFallback = () => <div className="p-6"><Skeleton className="h-64 w-full rounded-lg" /></div>;
 
@@ -398,6 +400,14 @@ export default function Admin() {
                       <BookOpen className="w-4 h-4" />
                       Updates
                     </TabsTrigger>
+                    <TabsTrigger value="changelog" className="gap-2">
+                      <History className="w-4 h-4" />
+                      Changelog
+                    </TabsTrigger>
+                    <TabsTrigger value="teams-oversight" className="gap-2">
+                      <Users className="w-4 h-4" />
+                      Teams Oversight
+                    </TabsTrigger>
                     <TabsTrigger value="surveys" className="gap-2">
                       <MessageSquare className="w-4 h-4" />
                       Surveys
@@ -581,6 +591,14 @@ export default function Admin() {
 
               <TabsContent value="system-updates">
                 <Suspense fallback={<AdminTabFallback />}><SystemUpdatesManager /></Suspense>
+              </TabsContent>
+
+              <TabsContent value="changelog">
+                <Suspense fallback={<AdminTabFallback />}><ChangelogManager /></Suspense>
+              </TabsContent>
+
+              <TabsContent value="teams-oversight">
+                <Suspense fallback={<AdminTabFallback />}><TeamOversight isAdmin={access.isPlatformAdmin} /></Suspense>
               </TabsContent>
 
               <TabsContent value="surveys">
