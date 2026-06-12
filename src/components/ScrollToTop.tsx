@@ -16,6 +16,8 @@ export function ScrollToTop() {
   const prev = useRef<{ pathname: string; search: string } | null>(null);
 
   useEffect(() => {
+    const samePath = prev.current?.pathname === pathname;
+
     // Save outgoing scroll before we mutate position.
     if (prev.current) {
       navigationMemory.save(prev.current.pathname, prev.current.search);
@@ -23,10 +25,13 @@ export function ScrollToTop() {
 
     if (navType === "POP") {
       const restored = navigationMemory.restore(pathname, search);
-      if (!restored) {
+      if (!restored && !samePath) {
         window.scrollTo({ top: 0, left: 0, behavior: "instant" });
       }
-    } else {
+    } else if (!samePath) {
+      // Only scroll to top on actual route changes — not when components
+      // update query params for tab/filter state (which would yank users
+      // back to the top while they're editing a form).
       window.scrollTo({ top: 0, left: 0, behavior: "instant" });
     }
 
