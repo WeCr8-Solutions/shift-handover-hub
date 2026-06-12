@@ -587,8 +587,8 @@ export function FlyerCampaigns() {
               return (
                 <Card
                   key={fz.zoneNumber}
-                  className="cursor-pointer hover:border-primary/50 transition-colors"
-                  onClick={() => { setQrZone(fz); setQrDialogOpen(true); }}
+                  className="cursor-pointer hover:border-primary/50 transition-colors relative"
+                  onClick={() => openStopsDialog(fz, db)}
                 >
                   <CardContent className="flex flex-col items-center gap-2 p-3">
                     <QRCodeSVG
@@ -604,12 +604,22 @@ export function FlyerCampaigns() {
                       <p className="text-[10px] text-muted-foreground font-mono mt-0.5">{`z${String(fz.zoneNumber).padStart(2, "0")}`}</p>
                     </div>
                     <ZoneStatusBadge status={db?.status ?? "pending"} />
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="absolute top-1 right-1 h-6 w-6"
+                      onClick={(e) => { e.stopPropagation(); setQrZone(fz); setQrDialogOpen(true); }}
+                      title="Preview QR"
+                    >
+                      <QrCode className="w-3 h-3" />
+                    </Button>
                   </CardContent>
                 </Card>
               );
             })}
           </div>
         </TabsContent>
+
 
         {/* ─── Drop Log ─── */}
         <TabsContent value="drop-log">
