@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "wecr8mcp": {
+      "command": "node",
+      "args": ["mcp/dist/index.js"]
+    }
+  }
+}
