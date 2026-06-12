@@ -163,6 +163,8 @@ const PLATFORM_LABELS: Record<SocialPlatform, string> = {
   generic: "Website",
 };
 
+// Templates are kept in sync with docs/marketing/. Each entry maps to a
+// strategy doc so launchers reflect the actual playbook, not generic copy.
 const PROMO_TEMPLATES: PromoTemplate[] = [
   {
     key: "open-house",
@@ -195,6 +197,63 @@ const PROMO_TEMPLATES: PromoTemplate[] = [
     ctaLabel: "See what’s new",
     description: "Announce a feature release, new program, or launch milestone.",
     promoCopy: "We just launched something new for manufacturing teams. Get the overview, see what changed, and share it with the people who need a faster way to manage the floor.",
+  },
+  // ---- Strategy-doc-backed launchers (docs/marketing/10-purple-cow.md) ----
+  {
+    key: "the-machinist-portrait",
+    label: "The Machinist — Portrait Call",
+    type: "promo",
+    ctaLabel: "Nominate a machinist",
+    description: "Annual portrait project celebrating 100 American machinists. Open call for nominations from shops and operators.",
+    promoCopy: "The Machinist is a year-long portrait project honoring 100 of the people the trade has forgotten to celebrate — the operators, leads, and programmers keeping precision manufacturing alive in America. Nominate someone whose work deserves a hardcover, a gallery wall, and a permanent record.",
+  },
+  {
+    key: "state-of-the-floor",
+    label: "State-of-the-Floor Report",
+    type: "promo",
+    ctaLabel: "Read the report",
+    description: "Annual data-driven report drawn from anonymized platform data: handoff completion, credential adoption, productivity benchmarks.",
+    promoCopy: "The State-of-the-Floor Report is the first benchmark built from real shop-floor data instead of survey guesses. Shift-handoff completion, credentialed-operator adoption, and live productivity benchmarks — free, citable, and built to be the number the trade reaches for.",
+  },
+  {
+    key: "expeditor-index",
+    label: "Expeditor Index (Monthly)",
+    type: "promo",
+    ctaLabel: "See this month’s index",
+    description: "Monthly Bloomberg-style productivity index from anonymized JobLine data. Designed for trade press and CNBC pickup.",
+    promoCopy: "The Expeditor Index is a monthly readout of US precision-manufacturing throughput, built from anonymized JobLine shop-floor data. One number, one chart, one direction — the fastest way to see what’s actually happening on the floor.",
+  },
+  {
+    key: "founder-essay",
+    label: "Founder Essay",
+    type: "promo",
+    ctaLabel: "Read the essay",
+    description: "Long-form founder post on LinkedIn / trade press. Voice: doc 01 brand-strategy.md.",
+    promoCopy: "A long-form note from the JobLine founder on why the shop floor deserves better tools — and what we’re actually building. No buzzwords, no AI theater, just the work.",
+  },
+  {
+    key: "shop-conversation",
+    label: "Shop Conversation Invite",
+    type: "promo",
+    ctaLabel: "Book a 30-min call",
+    description: "Founder-led discovery conversation outreach (doc 02 shop-side-strategy.md, first 14 days).",
+    promoCopy: "We’re sitting down with 25 precision-manufacturing leaders in the next 90 days to learn what’s actually broken on their floor. 30 minutes, no pitch, no deck — just your reality. If you run a shop and want to be heard, grab a slot.",
+  },
+  {
+    key: "trade-school-pilot",
+    label: "Trade-School Pilot",
+    type: "promo",
+    ctaLabel: "Bring JobLine to your program",
+    description: "Outreach to regional CNC/precision-manufacturing programs (doc 03 talent-side-strategy.md).",
+    promoCopy: "JobLine is opening trade-school pilots: free Operator Acceptance Program access, G-Code Academy banks, and credentialed talent profiles for graduating students. If you teach precision manufacturing, let’s get your next cohort onto the platform before they hit the floor.",
+  },
+  {
+    key: "operator-trading-cards",
+    label: "Operator Trading Cards",
+    type: "promo",
+    ctaLabel: "Claim your card",
+    description: "Physical, social-native operator cards (doc 10 purple-cow.md secondary bet).",
+    promoCopy: "Operator Trading Cards: a physical, printable record of what you’ve actually run, programmed, and signed off on. Credentialed, verifiable, and — yes — collectible. Claim yours and show the floor what you’re made of.",
   },
 ];
 
