@@ -223,6 +223,18 @@ export function FlyerCampaigns() {
   const [qrDialogOpen, setQrDialogOpen] = useState(false);
   const [qrZone, setQrZone] = useState<FlyerZone | null>(null);
 
+  // Zone stops dialog (business tiles + CRUD on flyer_stop_visits)
+  const [stopsDialogOpen, setStopsDialogOpen] = useState(false);
+  const [stopsZone, setStopsZone] = useState<FlyerZone | null>(null);
+  const [stopsZoneDbId, setStopsZoneDbId] = useState<string | null>(null);
+
+  function openStopsDialog(fz: FlyerZone, db?: DbZone) {
+    setStopsZone(fz);
+    setStopsZoneDbId(db?.id ?? null);
+    setStopsDialogOpen(true);
+  }
+
+
   // CSV export flag for download
   const [exportExpanded, setExportExpanded] = useState(false);
 
