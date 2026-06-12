@@ -313,6 +313,7 @@ const Index = () => {
         {/* Trial gate for authenticated users */}
         {user ? (
           <ExpiredTrialGate>
+            <BillingBanner />
             {/* Show skeleton while roles/org data are still loading */}
             {isRoleResolving ? (
               <div className="py-12 space-y-6">
