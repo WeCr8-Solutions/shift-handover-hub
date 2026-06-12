@@ -62,10 +62,11 @@ export default function Auth() {
 
   const handleResendVerification = async (targetEmail: string) => {
     setResendingVerification(true);
+    const resendLanding = readStoredIntent() === "talent" ? "/operator/profile?welcome=1&verified=1" : "/setup?verified=1";
     const { error } = await supabase.auth.resend({
       type: "signup",
       email: targetEmail,
-      options: { emailRedirectTo: `${window.location.origin}/setup?verified=1` },
+      options: { emailRedirectTo: `${window.location.origin}${resendLanding}` },
     });
     setResendingVerification(false);
     if (error) {
@@ -208,7 +209,9 @@ export default function Auth() {
 
     if (createMode) {
       ConversionEvents.signupStart(window.location.pathname, "email");
-      const { error } = await signUp(email, password, displayName);
+      // Talent signups verify straight into their profile editor; org signups go to shop setup.
+      const verifyLanding = intent === "talent" ? "/operator/profile?welcome=1&verified=1" : "/setup?verified=1";
+      const { error } = await signUp(email, password, displayName, verifyLanding);
       setIsSubmitting(false);
       if (error) {
         const msg = error.message.includes("already registered")

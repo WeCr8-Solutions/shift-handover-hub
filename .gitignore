@@ -36,3 +36,4 @@ desktop/package-lock.json
 # Auto-generated release manifests (written by scripts/write-release.mjs at build time)
 public/release.json
 src/generated/release.ts
+.fallow/

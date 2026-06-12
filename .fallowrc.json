@@ -1,0 +1,40 @@
+{
+  "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
+  "entry": [
+    "src/index.{ts,tsx,js,jsx}",
+    "src/main.{ts,tsx,js,jsx}",
+    // Vercel serverless functions — invoked by the platform, not imported
+    "api/**/*.ts",
+    // Operational scripts run manually or from npm scripts
+    "scripts/**/*.{js,mjs}",
+    // Supabase Deno edge functions — each index.ts is a deploy entry point
+    "supabase/functions/*/index.ts"
+  ],
+  "dynamicallyLoaded": [
+    // Blog posts loaded via import.meta.glob in Blog.tsx / BlogPost.tsx / BlogAdmin.tsx
+    "content/posts/*.mdx"
+  ],
+  "ignorePatterns": [
+    // Static assets served verbatim (script tags in public HTML)
+    "public/**",
+    // Separate node project with its own package.json (MCP server)
+    "mcp/**",
+    "dist/**",
+    // shadcn/ui vendored boilerplate — unused exports are expected
+    "src/components/ui/**",
+    // Test infrastructure (mocks/utils consumed ad hoc by future tests)
+    "src/test/**",
+    // SAP ERP connector — intentionally dormant, future roadmap (do not delete)
+    "src/connectors/sap/**"
+  ],
+  "health": {
+    "ignore": ["dist/**"]
+  },
+  "duplicates": {
+    // Hide pair-only clones; focus on widespread copy-paste worth refactoring.
+    "minOccurrences": 3
+  },
+  "rules": {
+    "unused-dependencies": "warn"
+  }
+}

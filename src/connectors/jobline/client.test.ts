@@ -2,13 +2,17 @@
  * Tests for src/connectors/jobline/client.ts
  */
 
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { getJobLineClient, disconnectJobLine, isRelayConfigured } from "@/connectors/jobline/client";
 
 describe("JobLineSubscriber client", () => {
   beforeEach(() => {
     // Reset singleton between tests
     disconnectJobLine();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
   });
 
   describe("getJobLineClient", () => {
@@ -24,8 +28,9 @@ describe("JobLineSubscriber client", () => {
     });
   });
 
-  describe("connect (Phase 1 stub)", () => {
-    it("returns false since relay is not configured", async () => {
+  describe("connect", () => {
+    it("returns false when the relay is not configured", async () => {
+      vi.stubEnv("VITE_RELAY_ENABLED", "false");
       const client = getJobLineClient();
       const result = await client.connect();
       expect(result).toBe(false);
@@ -42,8 +47,14 @@ describe("JobLineSubscriber client", () => {
   });
 
   describe("isRelayConfigured", () => {
-    it("returns false in Phase 1", () => {
+    it("returns false when VITE_RELAY_ENABLED is not 'true'", () => {
+      vi.stubEnv("VITE_RELAY_ENABLED", "false");
       expect(isRelayConfigured()).toBe(false);
+    });
+
+    it("returns true when VITE_RELAY_ENABLED is 'true'", () => {
+      vi.stubEnv("VITE_RELAY_ENABLED", "true");
+      expect(isRelayConfigured()).toBe(true);
     });
   });
 

@@ -18,7 +18,7 @@ interface AuthContextType {
   loading: boolean;
   /** True once the initial session has been restored from storage. Never resets to false. */
   isReady: boolean;
-  signUp: (email: string, password: string, displayName: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, displayName: string, emailRedirectPath?: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
@@ -166,8 +166,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [user]);
 
-  const signUp = async (email: string, password: string, displayName: string) => {
-    const redirectUrl = `${window.location.origin}/setup?verified=1`;
+  const signUp = async (email: string, password: string, displayName: string, emailRedirectPath = "/setup?verified=1") => {
+    const redirectUrl = `${window.location.origin}${emailRedirectPath}`;
     
     const { data, error } = await supabase.auth.signUp({
       email,
