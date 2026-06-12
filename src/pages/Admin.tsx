@@ -593,6 +593,14 @@ export default function Admin() {
                 <Suspense fallback={<AdminTabFallback />}><SystemUpdatesManager /></Suspense>
               </TabsContent>
 
+              <TabsContent value="changelog">
+                <Suspense fallback={<AdminTabFallback />}><ChangelogManager /></Suspense>
+              </TabsContent>
+
+              <TabsContent value="teams-oversight">
+                <Suspense fallback={<AdminTabFallback />}><TeamOversight isAdmin={access.isPlatformAdmin || access.isDeveloper} /></Suspense>
+              </TabsContent>
+
               <TabsContent value="surveys">
                 <Suspense fallback={<AdminTabFallback />}><VisitorSurveyAnalytics /></Suspense>
               </TabsContent>
