@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Loader2, Save, Building2, Users, Shield, Briefcase, Sparkles, ExternalLink, Globe, Lock, ShieldCheck, ArrowRight, UserCircle2, FileText } from "lucide-react";
 import { LeaveOrgButton } from "@/components/profile/LeaveOrgButton";
+import { SharePromoDialog } from "@/components/SharePromoDialog";
 import { useToast } from "@/hooks/use-toast";
 import { OnboardingProgress } from "@/components/onboarding";
 import { useOrgContext } from "@/contexts/OrgContext";
