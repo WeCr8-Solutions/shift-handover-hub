@@ -431,7 +431,13 @@ const App = () => (
                     <Route path="/industries/:slug" element={<IndustryPage />} />
                     <Route path="/resources/erp-guide/:partSlug" element={<ERPGuidePart />} />
                     <Route path="/dev" element={<DevPortal />} />
+                    <Route path="/dev/phases" element={<RequireAuth><RequireRole roles={["platform_admin","developer"]}><PhasesPage /></RequireRole></RequireAuth>} />
+                    <Route path="/dev/sap-test" element={<RequireAuth><RequireRole roles={["platform_admin","developer"]}><SapSandboxTest /></RequireRole></RequireAuth>} />
                     <Route path="/dev/:category/:slug" element={<DevDocArticle />} />
+                    <Route path="/settings/integrations/native" element={<RequireAuth><RequireOrg><NativeIntegration /></RequireOrg></RequireAuth>} />
+                    <Route path="/settings/integrations/jobboss" element={<RequireAuth><RequireOrg><JobBossIntegration /></RequireOrg></RequireAuth>} />
+                    <Route path="/settings/integrations/sap" element={<RequireAuth><RequireOrg><SapIntegration /></RequireOrg></RequireAuth>} />
+                    <Route path="/messages" element={<RequireAuth><RequireOrg><OrgMessages /></RequireOrg></RequireAuth>} />
                     <Route path="/display/:displayId" element={<ShopFloorDisplay />} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
