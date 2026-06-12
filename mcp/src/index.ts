@@ -222,7 +222,7 @@ server.tool(
         success: false,
         message: "hcl_create_note requires SUPABASE_SERVICE_KEY in mcp/.env. " +
           "Get the service_role key from Supabase → Project Settings → API. " +
-          "Read operations (observe, search, get_machines, etc.) work with the anon key.",
+          "Note: RLS on this schema also hides all rows from the anon key, so the service key is needed for reads to return data too.",
         entity_type,
         entity_id,
         note_content: description,
@@ -467,7 +467,9 @@ async function main() {
   const hasServiceKey = !!process.env.SUPABASE_SERVICE_KEY?.trim();
   console.error(
     `[wecr8mcp] v0.2.0 — 8 tools available — ` +
-    `reads: anon key — writes: ${hasServiceKey ? "service key ✓" : "service key missing (add to mcp/.env)"}`
+    (hasServiceKey
+      ? "service key ✓ (full read/write access)"
+      : "anon key only — RLS will return 0 rows for all queries; add SUPABASE_SERVICE_KEY to mcp/.env")
   );
 }
 
