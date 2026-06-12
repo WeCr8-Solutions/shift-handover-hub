@@ -57,10 +57,11 @@ export function HandoffDetailModal({ open, onOpenChange, record, onViewWorkOrder
     // ITAR audit trail: record that this handoff was viewed.
     void logAccess({
       tableName: "shift_handoff_records",
-      recordId: record.id,
+      recordId: record.recordId,
       operation: "READ",
-      metadata: record.work_order ? { work_order: record.work_order } : undefined,
+      metadata: record.workOrder ? { work_order: record.workOrder } : undefined,
     });
+
 
 
     const fetchRouting = async () => {
