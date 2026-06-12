@@ -228,9 +228,8 @@ export function ZoneStopsDialog({
     setSaving(true);
 
     const visitedByName =
-      profile?.first_name || profile?.last_name
-        ? `${profile?.first_name ?? ""} ${profile?.last_name ?? ""}`.trim()
-        : user.email ?? "Unknown";
+      profile?.display_name?.trim() || user.email || "Unknown";
+
 
     const payload = {
       campaign_id:       campaignId,
