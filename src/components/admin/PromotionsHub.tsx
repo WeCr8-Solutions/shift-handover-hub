@@ -765,6 +765,14 @@ export function PromotionsHub({ organizationId = null }: { organizationId?: stri
             <Globe className="w-3.5 h-3.5" />
             Flyer Ops
           </TabsTrigger>
+          <TabsTrigger value="audit" className="gap-1.5">
+            <ClipboardCheck className="w-3.5 h-3.5" />
+            Audit
+          </TabsTrigger>
+          <TabsTrigger value="strategy" className="gap-1.5">
+            <BookOpen className="w-3.5 h-3.5" />
+            Strategy
+          </TabsTrigger>
           <TabsTrigger value="brand-system" className="gap-1.5">
             <Sparkles className="w-3.5 h-3.5" />
             Brand System
