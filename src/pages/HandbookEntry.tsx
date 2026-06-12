@@ -8,6 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useHandbookReference } from "@/hooks/useHandbook";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
+import { InspectionToolReference } from "@/components/training/InspectionToolReference";
+import { MachiningOperationReference } from "@/components/training/MachiningOperationReference";
+import { ManualCite } from "@/components/manuals/ManualCite";
 
 export default function HandbookEntry() {
   const { slug } = useParams<{ slug: string }>();
@@ -137,6 +140,8 @@ export default function HandbookEntry() {
         <ReactMarkdown remarkPlugins={[remarkGfm]}>{ref.body_md}</ReactMarkdown>
       </article>
 
+      <RelatedReferences tags={ref.tags} />
+
       <AdPlacement format="rectangle" slot="handbook-entry-end" className="my-4" />
 
       {(ref.source_citation || ref.source_url) && (
@@ -158,5 +163,41 @@ export default function HandbookEntry() {
         </p>
       )}
     </div>
+  );
+}
+
+/**
+ * Related References block — parses handbook tags for `tool:<slug>`,
+ * `op:<slug>`, and `manual:<slug>` and renders the matching cite component.
+ * Authors tag a reference like `tool:digital-caliper` to embed it here.
+ */
+function RelatedReferences({ tags }: { tags: string[] }) {
+  const tools = tags.filter((t) => t.startsWith("tool:")).map((t) => t.slice(5));
+  const ops = tags.filter((t) => t.startsWith("op:")).map((t) => t.slice(3));
+  const manuals = tags.filter((t) => t.startsWith("manual:")).map((t) => t.slice(7));
+  if (tools.length === 0 && ops.length === 0 && manuals.length === 0) return null;
+
+  return (
+    <section className="space-y-3 border-t pt-6">
+      <h2 className="text-lg font-semibold">Related references</h2>
+      {tools.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs uppercase text-muted-foreground">Inspection tools</p>
+          {tools.map((slug) => <InspectionToolReference key={`tool-${slug}`} reference={slug} compact />)}
+        </div>
+      )}
+      {ops.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs uppercase text-muted-foreground">Machining operations</p>
+          {ops.map((slug) => <MachiningOperationReference key={`op-${slug}`} reference={slug} compact />)}
+        </div>
+      )}
+      {manuals.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs uppercase text-muted-foreground">Machine manuals</p>
+          {manuals.map((slug) => <ManualCite key={`manual-${slug}`} slug={slug} />)}
+        </div>
+      )}
+    </section>
   );
 }

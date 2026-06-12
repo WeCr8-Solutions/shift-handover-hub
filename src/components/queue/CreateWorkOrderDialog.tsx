@@ -22,6 +22,8 @@ import { RoutingSection } from "./RoutingSection";
 import { CustomerCombobox } from "./CustomerCombobox";
 import type { Customer } from "@/hooks/useCustomers";
 import { cn } from "@/lib/utils";
+import { useLoadBalancer } from "@/hooks/useLoadBalancer";
+import { Sparkles as SparklesIcon } from "lucide-react";
 
 
 interface Station {
@@ -489,10 +491,16 @@ export function CreateWorkOrderDialog({
           {/* Station Selection — shown when no routing is defined (works for both quotes and WOs) */}
           {!hasRouting && (
             <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                <Wrench className="w-4 h-4" />
-                Assign to Station
-              </Label>
+              <div className="flex items-center justify-between gap-2">
+                <Label className="flex items-center gap-2">
+                  <Wrench className="w-4 h-4" />
+                  Assign to Station
+                </Label>
+                <RecommendStationButton
+                  partSpecs={partSpecs}
+                  onPick={(stationId) => updateFormField("station_id", stationId)}
+                />
+              </div>
               <Select
                 value={formData.station_id || "none"}
                 onValueChange={(value) => updateFormField("station_id", value === "none" ? "" : value)}
@@ -756,5 +764,72 @@ export function CreateWorkOrderDialog({
         </form>
       </DialogContent>
     </Dialog>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Recommend Station — uses useLoadBalancer to score stations against part specs
+// ---------------------------------------------------------------------------
+function RecommendStationButton({
+  partSpecs,
+  onPick,
+}: {
+  partSpecs: PartSpecsData;
+  onPick: (stationId: string) => void;
+}) {
+  const { analyze, loading } = useLoadBalancer();
+  const [loadingClick, setLoadingClick] = useState(false);
+
+  const toNum = (v: string): number | null => {
+    if (!v) return null;
+    const n = parseFloat(v);
+    return Number.isFinite(n) ? n : null;
+  };
+
+  const handleClick = async () => {
+    setLoadingClick(true);
+    try {
+      const result = await analyze({
+        material_type: partSpecs.material_type || null,
+        part_length_inches: toNum(partSpecs.part_length_inches),
+        part_width_inches: toNum(partSpecs.part_width_inches),
+        part_height_inches: toNum(partSpecs.part_height_inches),
+        part_weight_lbs: toNum(partSpecs.part_weight_lbs),
+        part_shape: partSpecs.part_shape || null,
+        required_tolerance: partSpecs.required_tolerance || null,
+        surface_finish: partSpecs.surface_finish || null,
+      });
+      if (!result || !result.best_station_id) {
+        woToast.error("No recommendation", "No station scored high enough. Try filling out part specs.");
+        return;
+      }
+      const top = result.recommendations[0];
+      onPick(result.best_station_id);
+      woToast.success(
+        "Recommended station",
+        `${top.station_name} · score ${Math.round(top.total_score)} (capability ${Math.round(top.capability_score)}, workload ${Math.round(top.workload_score)})`,
+      );
+    } catch (err) {
+      console.error("Load balancer failed", err);
+      woToast.error("Could not score stations", (err as Error).message);
+    } finally {
+      setLoadingClick(false);
+    }
+  };
+
+  const busy = loading || loadingClick;
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      size="sm"
+      onClick={handleClick}
+      disabled={busy}
+      className="h-7 text-xs gap-1.5"
+      aria-label="Recommend best station for these part specs"
+    >
+      {busy ? <Loader2 className="w-3 h-3 animate-spin" /> : <SparklesIcon className="w-3 h-3" />}
+      Recommend station
+    </Button>
   );
 }

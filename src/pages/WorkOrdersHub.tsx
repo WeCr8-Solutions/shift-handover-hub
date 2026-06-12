@@ -77,6 +77,12 @@ export default function WorkOrdersHub() {
       icon: ClipboardList,
     },
     {
+      title: "WO Performance",
+      description: "Live completion %, setup variance, and schedule status across open work orders.",
+      to: "/work-orders/performance",
+      icon: BarChart3,
+    },
+    {
       title: "Production Analytics",
       description: "Throughput, on-time rate, and cycle time trends.",
       to: "/admin?tab=analytics",

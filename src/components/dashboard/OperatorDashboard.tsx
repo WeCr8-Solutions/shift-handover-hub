@@ -28,6 +28,8 @@ import { ComplimentaryAwardBanner } from "@/components/ComplimentaryAwardBanner"
 import { OperatorMyNumbers } from "./OperatorMyNumbers";
 import { AcknowledgeHandoffCard } from "./AcknowledgeHandoffCard";
 import { QuickStatusDialog } from "@/components/handoff/QuickStatusDialog";
+import { StationWorkOrderPicker } from "@/components/operator/StationWorkOrderPicker";
+import { useAnalytics } from "@/hooks/useAnalytics";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -76,11 +78,14 @@ export function OperatorDashboard({ isAdminView, onBackToOverview }: OperatorDas
     setShowEndShiftConfirm(true);
   };
 
+  const { track } = useAnalytics();
+
   const handleEndShiftConfirm = async () => {
     setShowEndShiftConfirm(false);
     setEndingShift(true);
     try {
       await checkOut();
+      track("shift_ended", { station_count: activeSessions.length });
       toast.success("Shift ended successfully");
     } catch (error) {
       console.error("Checkout error:", error);
@@ -221,15 +226,28 @@ export function OperatorDashboard({ isAdminView, onBackToOverview }: OperatorDas
 
       {/* Station panels */}
       {singleStation ? (
-        <OperatorStationPanel
-          stationId={activeSessions[0].station_id}
-          stationName={activeSessions[0].station?.name || "Station"}
-          onCreateHandoff={() => {
-            setHandoffStationId(activeSessions[0].station_id);
-            setShowHandoff(true);
-          }}
-          onPerformanceUpdate={() => setShowPerformance(true)}
-        />
+        <>
+          <OperatorStationPanel
+            stationId={activeSessions[0].station_id}
+            stationName={activeSessions[0].station?.name || "Station"}
+            onCreateHandoff={() => {
+              setHandoffStationId(activeSessions[0].station_id);
+              setShowHandoff(true);
+            }}
+            onPerformanceUpdate={() => setShowPerformance(true)}
+          />
+          <details className="rounded-lg border bg-card">
+            <summary className="cursor-pointer px-4 py-3 text-sm font-medium hover:bg-muted/30">
+              Pick another work order at {activeSessions[0].station?.name || "this station"}
+            </summary>
+            <div className="p-4 pt-0">
+              <StationWorkOrderPicker
+                stationId={activeSessions[0].station_id}
+                stationName={activeSessions[0].station?.name || "Station"}
+              />
+            </div>
+          </details>
+        </>
       ) : (
         <Tabs defaultValue={activeSessions[0].station_id} className="space-y-4">
           <TabsList className="bg-secondary flex-wrap h-auto gap-1 p-1">
@@ -240,7 +258,7 @@ export function OperatorDashboard({ isAdminView, onBackToOverview }: OperatorDas
             ))}
           </TabsList>
           {activeSessions.map((s) => (
-            <TabsContent key={s.station_id} value={s.station_id}>
+            <TabsContent key={s.station_id} value={s.station_id} className="space-y-4">
               <OperatorStationPanel
                 stationId={s.station_id}
                 stationName={s.station?.name || "Station"}
@@ -250,6 +268,17 @@ export function OperatorDashboard({ isAdminView, onBackToOverview }: OperatorDas
                 }}
                 onPerformanceUpdate={() => setShowPerformance(true)}
               />
+              <details className="rounded-lg border bg-card">
+                <summary className="cursor-pointer px-4 py-3 text-sm font-medium hover:bg-muted/30">
+                  Pick another work order at {s.station?.name || "this station"}
+                </summary>
+                <div className="p-4 pt-0">
+                  <StationWorkOrderPicker
+                    stationId={s.station_id}
+                    stationName={s.station?.name || "Station"}
+                  />
+                </div>
+              </details>
             </TabsContent>
           ))}
         </Tabs>

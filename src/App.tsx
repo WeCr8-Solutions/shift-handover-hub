@@ -144,6 +144,7 @@ const NativeIntegration = lazy(() => import("./pages/integrations/NativeIntegrat
 const JobBossIntegration = lazy(() => import("./pages/integrations/JobBossIntegration"));
 const SapIntegration = lazy(() => import("./pages/integrations/SapIntegration"));
 const OrgMessages = lazy(() => import("./pages/OrgMessages"));
+const WorkOrderPerformance = lazy(() => import("./pages/WorkOrderPerformance"));
 const EmployerDashboard = lazy(() => import("./pages/EmployerDashboard"));
 const CertificateLookup = lazy(() => import("./pages/CertificateLookup"));
 const VerifyCertificate = lazy(() => import("./pages/VerifyCertificate"));
@@ -278,6 +279,7 @@ const App = () => (
                     <Route path="/work-orders/completed" element={<RequireAuth><RequireOrg><CompletedWorkOrders /></RequireOrg></RequireAuth>} />
                     <Route path="/work-orders/cancelled" element={<RequireAuth><RequireOrg><CancelledWorkOrders /></RequireOrg></RequireAuth>} />
                     <Route path="/work-orders/on-hold" element={<RequireAuth><RequireOrg><OnHoldWorkOrders /></RequireOrg></RequireAuth>} />
+                    <Route path="/work-orders/performance" element={<RequireAuth><RequireOrg><WorkOrderPerformance /></RequireOrg></RequireAuth>} />
                     <Route path="/work-orders/:id/traveler" element={<RequireAuth><RequireOrg><WorkOrderTraveler /></RequireOrg></RequireAuth>} />
                     <Route path="/work-orders/:id/coc" element={<RequireAuth><RequireOrg><WorkOrderCoC /></RequireOrg></RequireAuth>} />
                     <Route path="/quotes" element={<RequireAuth><RequireOrg><QuotesHub /></RequireOrg></RequireAuth>} />
