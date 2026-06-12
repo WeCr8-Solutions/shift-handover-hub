@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import type { ShiftHandoffRecord } from "@/types/handoff";
 import { ReadinessChecklist } from "@/components/ReadinessChecklist";
+import { useDataAccessLog } from "@/hooks/useDataAccessLog";
 
 interface RoutingStep {
   id: string;
@@ -45,12 +46,22 @@ const STEP_STATUS_STYLES: Record<string, { bg: string; text: string; icon: typeo
 export function HandoffDetailModal({ open, onOpenChange, record, onViewWorkOrder }: HandoffDetailModalProps) {
   const [routingSteps, setRoutingSteps] = useState<RoutingStep[]>([]);
   const [loadingRouting, setLoadingRouting] = useState(false);
+  const { logAccess } = useDataAccessLog();
 
   useEffect(() => {
     if (!open || !record) {
       setRoutingSteps([]);
       return;
     }
+
+    // ITAR audit trail: record that this handoff was viewed.
+    void logAccess({
+      tableName: "shift_handoff_records",
+      recordId: record.id,
+      operation: "READ",
+      metadata: record.work_order ? { work_order: record.work_order } : undefined,
+    });
+
 
     const fetchRouting = async () => {
       setLoadingRouting(true);
