@@ -13,6 +13,7 @@ import {
   ArrowRight, Loader2, Route, Wrench, AlertTriangle, ExternalLink,
 } from "lucide-react";
 import type { ShiftHandoffRecord } from "@/types/handoff";
+import { ReadinessChecklist } from "@/components/ReadinessChecklist";
 
 interface RoutingStep {
   id: string;
