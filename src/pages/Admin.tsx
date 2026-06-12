@@ -598,7 +598,7 @@ export default function Admin() {
               </TabsContent>
 
               <TabsContent value="teams-oversight">
-                <Suspense fallback={<AdminTabFallback />}><TeamOversight isAdmin={access.isPlatformAdmin || access.isDeveloper} /></Suspense>
+                <Suspense fallback={<AdminTabFallback />}><TeamOversight isAdmin={access.isPlatformAdmin} /></Suspense>
               </TabsContent>
 
               <TabsContent value="surveys">
