@@ -274,6 +274,12 @@ export function isRelayConfigured(): boolean {
  */
 async function fetchRelayToken(): Promise<RelayTokenResponse | null> {
   try {
+    // Skip if no authenticated session — edge function requires a valid JWT.
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session?.access_token) {
+      return null;
+    }
+
     const { data, error } = await supabase.functions.invoke("relay-token");
     if (error) {
       // Quiet log — Phase 1 (no relay configured) is the expected default.
