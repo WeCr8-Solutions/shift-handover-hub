@@ -1702,11 +1702,24 @@ function CertificationsManager({
                   Certificate #{c.linked_cert_id ?? c.credential_id}
                 </p>
               )}
-              {c.credential_url && (
+              {/* Prefer in-app /verify route for JobLine-issued certs so the link
+                  works on preview and any host — not just jobline.ai production. */}
+              {c.linked_cert_id ? (
+                <Link
+                  to={`/verify/${c.linked_cert_id}?back=${encodeURIComponent("/operator/profile?tab=certs")}`}
+                  className="text-xs text-primary underline break-all inline-flex items-center gap-1"
+                >
+                  <ShieldCheck className="w-3 h-3" /> Verify certificate
+                </Link>
+              ) : c.credential_url ? (
                 <a href={c.credential_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary underline break-all">
-                  View credential
+                  View external credential
                 </a>
-              )}
+              ) : !isVerified ? (
+                <p className="text-[11px] text-muted-foreground italic">
+                  Self-attested — no third-party verification on file. Upload a copy for evidence.
+                </p>
+              ) : null}
             </div>
             <div className="flex items-center gap-1 shrink-0">
               {!isVerified && (
