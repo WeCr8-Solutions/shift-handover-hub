@@ -676,6 +676,11 @@ export default function PublicTalentProfile() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
+                      {group.key === "self" && (
+                        <p className="text-xs text-muted-foreground italic mb-3">
+                          Self-attested by the operator. Not independently verified by JobLine — supporting files (if any) are attached.
+                        </p>
+                      )}
                       <div className="grid grid-cols-1 [@media(min-width:420px)]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                         {group.items.map((c) => (
                           <CertificateThumbnail
