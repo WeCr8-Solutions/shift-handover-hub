@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useUrlState } from "@/hooks/useUrlState";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Header } from "@/components/Header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
