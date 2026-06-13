@@ -165,7 +165,11 @@ export function CertificateThumbnail({ cert, category }: Props) {
           <span className="text-[9px] sm:text-[10px] text-muted-foreground truncate">
             {hasViewableContent ? "Tap to view" : "No file uploaded"}
           </span>
-          {category !== "self" && (
+          {category === "self" ? (
+            <Badge variant="outline" className="h-4 px-1 text-[8px] sm:text-[9px] shrink-0 border-muted-foreground/40 text-muted-foreground">
+              Self-attested
+            </Badge>
+          ) : (
             <Badge variant="outline" className="h-4 px-1 text-[8px] sm:text-[9px] shrink-0">Verified</Badge>
           )}
         </div>
