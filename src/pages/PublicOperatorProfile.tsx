@@ -659,7 +659,7 @@ export default function PublicTalentProfile() {
             { key: "oap" as const, title: "JobLine OAP", icon: ShieldCheck, tone: "border-primary/30 bg-gradient-to-br from-primary/5 to-transparent", items: oapCerts },
             { key: "gca" as const, title: "G-Code Academy", icon: Trophy, tone: "border-warning/30 bg-gradient-to-br from-warning/5 to-transparent", items: gcaCerts },
             { key: "partner" as const, title: "Partner Verified", icon: ShieldCheck, tone: "border-accent/30 bg-gradient-to-br from-accent/5 to-transparent", items: partnerCerts },
-            { key: "self" as const, title: "Self-Uploaded", icon: Award, tone: "", items: selfCerts },
+            { key: "self" as const, title: "Self-Attested Training & Awards", icon: Award, tone: "border-dashed", items: selfCerts },
           ].filter((g) => g.items.length > 0);
 
           return (
