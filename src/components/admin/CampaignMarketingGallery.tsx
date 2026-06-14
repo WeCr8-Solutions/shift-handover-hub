@@ -230,7 +230,7 @@ export function CampaignMarketingGallery({ campaignId }: Props) {
         if (!res.ok) continue;
         const blob = await res.blob();
         const baseName = a.storage_path.split("/").pop() ?? `${a.id}`;
-        const safeTitle = a.title.replace(/[^\w.\-]+/g, "_").slice(0, 60);
+        const safeTitle = a.title.replace(/[^\w.-]+/g, "_").slice(0, 60);
         const filename = `${safeTitle || a.id}__${baseName}`;
         zip.folder(folders[a.kind])!.file(filename, blob);
         manifest.push([

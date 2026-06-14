@@ -1,6 +1,6 @@
 // E2E verify: regenerated template parses cleanly with zero errors.
 import ExcelJS from 'exceljs';
-import { readFileSync } from 'node:fs';
+
 const wb = new ExcelJS.Workbook();
 await wb.xlsx.readFile('public/templates/JobLine_Setup_Template.xlsx');
 const names = wb.worksheets.map(w => w.name);

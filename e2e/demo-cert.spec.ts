@@ -44,7 +44,7 @@ test.describe("Product demo - certificate verification", () => {
     await test.step("show certificate action state", async () => {
       const downloadButton = page.getByRole("button", { name: /download pdf/i });
       const unlockButton = page.getByRole("button", {
-        name: /unlock pdf.*print|unlock pdf \& print/i,
+        name: /unlock pdf.*print|unlock pdf & print/i,
       });
 
       if (await downloadButton.isVisible().catch(() => false)) {

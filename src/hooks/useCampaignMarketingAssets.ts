@@ -70,7 +70,7 @@ export function useCampaignMarketingAssets(campaignId: string | null) {
   }) {
     if (!campaignId) throw new Error("No campaign selected");
     const user = (await supabase.auth.getUser()).data.user;
-    const safeName = params.filename.replace(/[^\w.\-]+/g, "_");
+    const safeName = params.filename.replace(/[^\w.-]+/g, "_");
     const path = `${campaignId}/${Date.now()}-${safeName}`;
     const { error: upErr } = await supabase.storage
       .from(BUCKET)
