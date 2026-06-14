@@ -75,20 +75,6 @@ export default function AdminAmazonLinks() {
     if (user && !hasPlatformAccess) navigate("/");
   }, [accessLoading, user, hasPlatformAccess, navigate]);
 
-  if (authLoading || accessLoading) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <div className="container py-6 space-y-4">
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-64 w-full rounded-lg" />
-        </div>
-      </div>
-    );
-  }
-
-  if (!hasPlatformAccess) return null;
-
   const activeTag = state.tag || AFFILIATE_TAG;
 
   const filtered = useMemo(() => {
@@ -102,6 +88,20 @@ export default function AdminAmazonLinks() {
         b.usages.some((u) => u.label.toLowerCase().includes(q) || u.path.toLowerCase().includes(q)),
     );
   }, [filter]);
+
+  if (authLoading || accessLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container py-6 space-y-4">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-64 w-full rounded-lg" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!hasPlatformAccess) return null;
 
   const saveTag = () => {
     const trimmed = tagDraft.trim();
