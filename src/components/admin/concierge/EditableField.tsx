@@ -62,7 +62,7 @@ export function EditableField({
     try {
       if (value) localStorage.setItem(key, value);
       else localStorage.removeItem(key);
-    } catch {}
+    } catch { /* noop */ }
   }, [loaded, key, value]);
 
   if (readOnly) {
