@@ -2,8 +2,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import type { CertificateProgram } from "@/lib/certificates";
+import type { CertificateVariant } from "@/components/certificates/CertificateTemplate";
 
-export type CertificateVariant = "diploma" | "digital";
+export type { CertificateVariant };
 export type BorderStyle = "ornate" | "minimal" | "modern";
 
 export interface CertificateTemplate {
