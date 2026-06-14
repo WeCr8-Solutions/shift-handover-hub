@@ -55,7 +55,7 @@ export function unlockSignature(storageKey: string) {
   try {
     localStorage.removeItem(storageKey + LOCK_SUFFIX);
     localStorage.removeItem(storageKey);
-  } catch {}
+  } catch { /* noop */ }
 }
 
 export interface SignaturePadProps {
@@ -164,7 +164,7 @@ export function SignaturePad({
       const canvas = canvasRef.current;
       if (!canvas) return;
       localStorage.setItem(storageKey, canvas.toDataURL("image/png"));
-    } catch {}
+    } catch { /* noop */ }
   }, [storageKey, locked]);
 
   const pointFromEvent = (e: PointerEvent | React.PointerEvent) => {
@@ -200,7 +200,7 @@ export function SignaturePad({
     lastPointRef.current = null;
     try {
       canvasRef.current?.releasePointerCapture(e.pointerId);
-    } catch {}
+    } catch { /* noop */ }
     persistDraft();
   };
 
@@ -215,7 +215,7 @@ export function SignaturePad({
     if (storageKey)
       try {
         localStorage.removeItem(storageKey);
-      } catch {}
+      } catch { /* noop */ }
   };
 
   const lockNow = async () => {
@@ -233,7 +233,7 @@ export function SignaturePad({
       try {
         localStorage.setItem(storageKey, dataUrl);
         localStorage.setItem(storageKey + LOCK_SUFFIX, JSON.stringify(env));
-      } catch {}
+      } catch { /* noop */ }
     }
     setLocked(env);
   };

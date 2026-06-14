@@ -91,7 +91,7 @@ function json(body: unknown, status = 200) {
 }
 
 function base64url(bytes: Uint8Array) {
-  let s = btoa(String.fromCharCode(...bytes))
+  const s = btoa(String.fromCharCode(...bytes))
   return s.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
 }
 

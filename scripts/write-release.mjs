@@ -59,7 +59,7 @@ function previousCommitSha() {
     if (typeof prev?.commitSha === "string" && prev.commitSha && prev.commitSha !== "unknown") {
       return prev.commitSha;
     }
-  } catch {}
+  } catch { /* noop */ }
   return null;
 }
 

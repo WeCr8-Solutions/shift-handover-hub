@@ -105,7 +105,7 @@ export function OrgDetailView({ org, onBack, isPlatformAdmin, onDelete, onGrant,
       if (membersRes.data) {
         const rows = membersRes.data as Array<{ user_id: string; role: string; joined_at: string }>;
         const userIds = Array.from(new Set(rows.map((r) => r.user_id)));
-        let profileMap = new Map<string, { display_name: string | null; email: string | null }>();
+        const profileMap = new Map<string, { display_name: string | null; email: string | null }>();
         if (userIds.length > 0) {
           const { data: profs } = await supabase
             .from("profiles")

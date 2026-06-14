@@ -38,6 +38,7 @@ export async function screenPromptInjection(rawInput: string): Promise<PromptScr
   const text = (rawInput ?? "").toString();
   // Strip control characters except newline / tab.
   // deno-lint-ignore no-control-regex
+  // eslint-disable-next-line no-control-regex
   const stripped = text.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "");
   const sanitized = stripped.length > MAX_PROMPT_CHARS ? stripped.slice(0, MAX_PROMPT_CHARS) : stripped;
 
