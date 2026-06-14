@@ -162,7 +162,7 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
       }
       const billing = localStorage.getItem(billingStorageKey);
       if (billing) setBillingEmailOverride(billing);
-    } catch {}
+    } catch { /* noop */ }
     setRepLoaded(true);
   }, [repStorageKey, billingStorageKey]);
 
@@ -180,11 +180,11 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
         repStorageKey,
         JSON.stringify({ salesRepName, salesRepTitle, jobLineRepName, jobLineRepTitle, repTalentUrl }),
       );
-    } catch {}
+    } catch { /* noop */ }
   }, [repLoaded, repStorageKey, salesRepName, salesRepTitle, jobLineRepName, jobLineRepTitle, repTalentUrl]);
   useEffect(() => {
     if (!repLoaded) return;
-    try { localStorage.setItem(billingStorageKey, billingEmailOverride); } catch {}
+    try { localStorage.setItem(billingStorageKey, billingEmailOverride); } catch { /* noop */ }
   }, [repLoaded, billingStorageKey, billingEmailOverride]);
 
   const effectiveBillingEmail = billingEmailOverride || org?.billing_email || "_________________________";
@@ -209,13 +209,13 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
     try {
       const v = localStorage.getItem(recommendedTierKey);
       if (v) setRecommendedTier(v);
-    } catch {}
+    } catch { /* noop */ }
   }, [recommendedTierKey]);
   useEffect(() => {
     try {
       if (recommendedTier) localStorage.setItem(recommendedTierKey, recommendedTier);
       else localStorage.removeItem(recommendedTierKey);
-    } catch {}
+    } catch { /* noop */ }
   }, [recommendedTierKey, recommendedTier]);
 
   // ---- Finalization (cloud-persisted draft + sealed master) ----
@@ -245,10 +245,10 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
           try {
             const env = JSON.parse(localStorage.getItem(key) ?? "{}");
             signatures[key.slice(0, -":locked".length)] = env;
-          } catch {}
+          } catch { /* noop */ }
         }
       }
-    } catch {}
+    } catch { /* noop */ }
     return {
       selected,
       paperSize,
